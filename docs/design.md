@@ -6,7 +6,7 @@
 
 | 分类 | 技术 | 版本 |
 |------|------|------|
-| 语言 | Java | 21 |
+| 语言 | Java | 25 |
 | 框架 | JavaFX | 21 |
 | ORM | MyBatis-Plus | 3.5.5 |
 | 数据库 | SQLite | 3.x |
@@ -183,6 +183,21 @@ foodGPT/                              # 项目根目录
 | description | TEXT | NULL | 菜谱简介 |
 | source | VARCHAR(100) | NULL | 来源（如联网搜索） |
 | create_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+**JSON字段处理说明**：
+
+- ingredients 和 steps 字段以 JSON 数组格式存储（如 ["鸡蛋", "番茄"]）
+
+- 在 MyBatis-Plus 中需配置 JacksonTypeHandler 实现自动映射
+
+**实体类写法**：
+```java
+@TableField(typeHandler = JacksonTypeHandler.class)
+private List<String> ingredients;
+
+@TableField(typeHandler = JacksonTypeHandler.class)
+private List<String> steps;
+```
 
 #### 2.2.4 meal_record（用餐记录表）
 
@@ -670,8 +685,10 @@ public class Recipe {
     private Long id;
     private String name;
     private String category;
-    private String ingredients;
-    private String steps;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> ingredients;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> steps;
     private Double protein;
     private Double carbohydrate;
     private Double fat;
@@ -695,6 +712,9 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import java.util.List;
 
 @Data
 @TableName("meal_record")
@@ -1013,19 +1033,22 @@ import com.foodgpt.dto.AiChatDTO;
 import com.foodgpt.service.AiAdvisorService;
 import com.foodgpt.util.JsonUtil;
 import okhttp3.*;
-import org.springframework.stereotype.Service;
+import com.foodgpt.config.AppConfig;
+import java.util.concurrent.TimeUnit;
 
 import java.io.IOException;
 
-@Service
 public class AiAdvisorServiceImpl implements AiAdvisorService {
 
     private final OkHttpClient client;
     private final ApiConfig apiConfig;
 
-    public AiAdvisorServiceImpl(ApiConfig apiConfig) {
-        this.apiConfig = apiConfig;
-        this.client = new OkHttpClient.Builder().build();
+    public AiAdvisorServiceImpl() {
+       this.client = new OkHttpClient.Builder()
+           .connectTimeout(10, TimeUnit.SECONDS)
+           .readTimeout(30, TimeUnit.SECONDS)
+           .build();
+        this.apiConfig = AppConfig.load().getApi();
     }
 
     @Override
@@ -1315,12 +1338,15 @@ public class AppConfig {
 package com.foodgpt;
 
 import com.foodgpt.config.AppConfig;
-import com.foodgpt.config.DatabaseConfig;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 
 import java.io.File;
 
@@ -1348,10 +1374,34 @@ public class FoodGPTApplication extends Application {
         if (!dataDir.exists()) {
             dataDir.mkdirs();
         }
-        
-        DatabaseConfig.init(config.getDatabase());
+                // 初始化数据库（建表）
+        String dbUrl = "jdbc:sqlite:data/foodgpt.db";
+        try (Connection conn = DriverManager.getConnection(dbUrl);
+             Statement stmt = conn.createStatement()) {
+            
+            // 创建身体数据表
+            stmt.execute("CREATE TABLE IF NOT EXISTS body_data (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "user_id INTEGER NOT NULL DEFAULT 1," +
+                    "height REAL NOT NULL," +
+                    "weight REAL NOT NULL," +
+                    "age INTEGER NOT NULL," +
+                    "activity_level VARCHAR(20) NOT NULL," +
+                    "bmi REAL," +
+                    "bmr REAL," +
+                    "recommended_calories_min INTEGER," +
+                    "recommended_calories_max INTEGER," +
+                    "create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                    "update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+            
+            // 创建其他表（weight_record、recipe、meal_record、cycle_record、user_preference、health_goal）
+            // ... 类似格式
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
     public static void main(String[] args) {
         launch(args);
     }
