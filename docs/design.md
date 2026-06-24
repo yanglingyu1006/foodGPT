@@ -10,7 +10,7 @@
 | 框架 | JavaFX | 21 |
 | ORM | MyBatis-Plus | 3.5.5 |
 | 数据库 | SQLite | 3.x |
-| HTTP客户端 | OpenAI SDK | 4.12.0 |
+| HTTP客户端 | OkHttp | 4.12.0 |
 | JSON处理 | Jackson | 2.16.0 |
 | 图标库 | Ikonli | 12.3.1 |
 
@@ -19,8 +19,7 @@
 采用 **MVC架构**，结合 **分层设计**：
 
 - **View层**：FXML + Controller，负责界面展示和用户交互
-- **Controller层**：处理界面事件，调用Service层（接收/返回DTO）
-- **DTO层**：数据传输对象，定义Controller与Service之间的数据结构
+- **Controller层**：处理界面事件，调用Service层
 - **Service层**：业务逻辑处理
 - **Mapper层**：数据访问接口，基于MyBatis-Plus
 - **Entity层**：实体类，对应数据库表结构
@@ -53,15 +52,6 @@
 │  └─────────┼────────────────┼────────────────┼───────────────────────┘   │
 │            │                │                │                          │
 │  ┌─────────▼────────────────▼────────────────▼───────────────────────┐   │
-│  │                        DTO 层                                     │   │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │   │
-│  │  │RecipeSearch │ │ MealInput   │ │NutritionSum │ │ AiChatDTO   │ │   │
-│  │  │    DTO      │ │    DTO      │ │   maryDTO   │ │             │ │   │
-│  │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ │   │
-│  │         │               │               │               │        │   │
-│  └─────────┼───────────────┼───────────────┼───────────────┼────────┘   │
-│            │               │               │               │            │
-│  ┌─────────▼───────────────▼───────────────▼───────────────▼────────┐   │
 │  │                        Service 层                                 │   │
 │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │   │
 │  │  │BodyDataServ │ │RecipeService│ │NutritionServ│ │ AiAdvisor   │ │   │
@@ -102,8 +92,7 @@
 | 层级 | 职责 | 技术实现 | 关键组件 |
 |------|------|----------|----------|
 | **View层** | 界面展示与用户交互 | JavaFX FXML + Controller | Dashboard、MealRecord、Recipe等FXML视图 |
-| **Controller层** | 事件处理与视图逻辑，接收/返回DTO | JavaFX Controller类 | BodyDataCtrl、MealRecordCtrl、AiAdvisorCtrl等 |
-| **DTO层** | 数据传输对象，定义Controller与Service之间的数据结构 | POJO类 | RecipeSearchDTO、MealInputDTO、NutritionSummaryDTO、AiChatDTO等 |
+| **Controller层** | 事件处理与视图逻辑 | JavaFX Controller类 | BodyDataCtrl、MealRecordCtrl、AiAdvisorCtrl等 |
 | **Service层** | 业务逻辑处理 | Spring Service | BodyDataService、NutritionService、AiAdvisorService等 |
 | **Mapper层** | 数据库访问 | MyBatis-Plus BaseMapper | BodyDataMapper、RecipeMapper、CycleRecordMapper等 |
 | **Entity层** | 实体类，对应数据库表结构 | POJO类 | BodyData、Recipe、MealRecord、CycleRecord等 |
@@ -161,12 +150,7 @@ foodGPT/                              # 项目根目录
 │       │       │   ├── BmiBmrCalculator.java
 │       │       │   ├── NutritionCalculator.java
 │       │       │   ├── JsonUtil.java
-│       │       │   └── OkHttpUtil.java
-│       │       ├── dto/                       # 数据传输对象
-│       │       │   ├── RecipeSearchDTO.java
-│       │       │   ├── MealInputDTO.java
-│       │       │   ├── NutritionSummaryDTO.java
-│       │       │   └── AiChatDTO.java
+│       │       │   
 │       │       └── enums/                     # 枚举类
 │       │           ├── ActivityLevel.java
 │       │           ├── MealType.java
@@ -204,12 +188,12 @@ foodGPT/                              # 项目根目录
 ### 1.5 数据流向
 
 ```
-用户操作 → Controller → DTO → Service → Mapper → SQLite数据库
+用户操作 → Controller → Service → Mapper → SQLite数据库
                                     │
                                     └──→ API调用（搜索/AI）
                                               │
                                               ↓
-                                    返回数据 → Service → DTO → Controller → View展示
+                                    返回数据 → Service → Controller → View展示
 ```
 
 **数据流转路径**：
@@ -221,10 +205,7 @@ foodGPT/                              # 项目根目录
 [View层] FXML界面接收用户输入
     │
     ▼
-[Controller层] 处理事件，调用Service（接收/返回DTO）
-    │
-    ▼
-[DTO层] 数据传输对象（Controller与Service之间的数据结构）
+[Controller层] 处理事件，调用Service
     │
     ▼
 [Service层] 执行业务逻辑
@@ -240,7 +221,7 @@ foodGPT/                              # 项目根目录
            API响应数据
                 │
                 ▼
-返回数据 → Service → DTO → Controller → View更新展示
+返回数据 → Service → Controller → View更新展示
 ```
 
 ---
@@ -909,13 +890,17 @@ public interface BodyDataService {
 ```java
 package com.foodgpt.service;
 
-import com.foodgpt.dto.NutritionSummaryDTO;
+import com.foodgpt.entity.NutritionRecord;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface NutritionService {
-    NutritionSummaryDTO getDailyNutrition(LocalDate date);
-    double calculateBalanceScore(NutritionSummaryDTO summary);
+        // 获取某日的营养素记录列表
+    List<NutritionRecord> getDailyNutrition(LocalDate date);
+    
+    // 计算均衡度评分（传入营养素记录列表）
+    double calculateBalanceScore(List<NutritionRecord> records);
 }
 ```
 
@@ -1046,87 +1031,13 @@ public enum MealType {
 }
 ```
 
-### 5.6 DTO类
 
-#### 5.6.1 NutritionSummaryDTO.java
-
-```java
-package com.foodgpt.dto;
-
-import lombok.Data;
-
-@Data
-public class NutritionSummaryDTO {
-    private double protein;
-    private double carbohydrate;
-    private double fat;
-    private int calories;
-    private double proteinTarget;
-    private double carbohydrateTarget;
-    private double fatTarget;
-    private int caloriesTarget;
-}
-```
 
 ---
 
 ## 6. DeepSeek API调用设计
 
 ### 6.1 API调用封装
-
-#### 6.1.1 AiChatDTO.java
-
-```java
-package com.foodgpt.dto;
-
-import lombok.Data;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
-
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class AiChatDTO {
-    private List<Message> messages;
-    private String model;
-    private Thinking thinking;
-    private String reasoningEffort;
-    private Integer maxTokens;
-    private ResponseFormat responseFormat;
-    private Boolean stream;
-    private Double temperature;
-    private Double topP;
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Message {
-        private String content;
-        private String role;
-    }
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Thinking {
-        private String type;
-    }
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ResponseFormat {
-        private String type;
-    }
-}
-```
 
 #### 6.1.2 AiAdvisorService.java
 
@@ -1147,25 +1058,24 @@ package com.foodgpt.service.impl;
 import com.foodgpt.config.ApiConfig;
 import com.foodgpt.service.AiAdvisorService;
 import com.foodgpt.config.AppConfig;
-import com.openai.client.OpenAIClient;
-import com.openai.client.okhttp.OpenAIOkHttpClient;
-import com.openai.models.ChatCompletion;
-import com.openai.models.ChatCompletionCreateParams;
-import com.openai.models.ChatCompletionMessage;
-import com.openai.models.ChatCompletionMessageParam;
+import com.foodgpt.util.JsonUtil;
+import okhttp3.*;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class AiAdvisorServiceImpl implements AiAdvisorService {
 
-    private final OpenAIClient client;
+    private final OkHttpClient client;
     private final ApiConfig apiConfig;
 
     public AiAdvisorServiceImpl() {
         this.apiConfig = AppConfig.load().getApi();
-        this.client = OpenAIOkHttpClient.builder()
-                .baseUrl(apiConfig.getDeepseek().getBaseUrl())
-                .apiKey(apiConfig.getDeepseek().getApiKey())
+        this.client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
                 .build();
     }
 
@@ -1173,35 +1083,44 @@ public class AiAdvisorServiceImpl implements AiAdvisorService {
     public String getAdvice(String userMessage) {
         String systemPrompt = buildSystemPrompt();
 
-        // 构建消息列表
-        List<ChatCompletionMessageParam> messages = List.of(
-                ChatCompletionMessageParam.builder()
-                        .content(systemPrompt)
-                        .role(ChatCompletionMessage.Role.SYSTEM)
-                        .build(),
-                ChatCompletionMessageParam.builder()
-                        .content(userMessage)
-                        .role(ChatCompletionMessage.Role.USER)
-                        .build()
+        // 直接用 Map 构建请求体
+        Map<String, Object> requestBody = Map.of(
+                "model", apiConfig.getDeepseek().getModel(),
+                "messages", List.of(
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", userMessage)
+                ),
+                "max_tokens", apiConfig.getDeepseek().getMaxTokens(),
+                "temperature", apiConfig.getDeepseek().getTemperature()
         );
 
-        // 构建请求参数
-        ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
-                .model(apiConfig.getDeepseek().getModel())
-                .messages(messages)
-                .maxCompletionTokens(apiConfig.getDeepseek().getMaxTokens())
-                .temperature(apiConfig.getDeepseek().getTemperature())
-                .build();
-
-        // 发送请求并获取响应
-        ChatCompletion completion = client.chat().completions().create(params);
-
-        // 提取回复内容
-        return completion.choices().get(0).message().content().orElse("抱歉，我暂时无法提供建议。");
+        return executeRequest(requestBody);
     }
 
     private String buildSystemPrompt() {
         return "你是一位专业的女性健康饮食顾问。请根据用户的身体数据、生理周期阶段、健康目标和饮食偏好，提供个性化的饮食建议。建议内容要具体、实用，包含食材推荐和摄入量建议。";
+    }
+
+    private String executeRequest(Map<String, Object> requestBody) {
+        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
+        String jsonBody = JsonUtil.toJson(requestBody);
+        
+        Request request = new Request.Builder()
+                .url(apiConfig.getDeepseek().getBaseUrl())
+                .post(RequestBody.create(mediaType, jsonBody))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Bearer " + apiConfig.getDeepseek().getApiKey())
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("API调用失败: " + response.code());
+            }
+            String responseBody = response.body().string();
+            return JsonUtil.extractValue(responseBody, "choices[0].message.content");
+        } catch (IOException e) {
+            throw new RuntimeException("网络请求失败: " + e.getMessage(), e);
+        }
     }
 
     @Override
