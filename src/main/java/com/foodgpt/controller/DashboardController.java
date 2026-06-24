@@ -1,0 +1,126 @@
+package com.foodgpt.controller;
+
+import com.foodgpt.entity.BodyData;
+import com.foodgpt.enums.ActivityLevel;
+import com.foodgpt.service.BodyDataService;
+import com.foodgpt.service.MealRecordService;
+import com.foodgpt.service.NutritionService;
+import com.foodgpt.util.BmiBmrCalculator;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Map;
+
+public class DashboardController {
+
+    @FXML
+    private Spinner<Integer> heightSpinner;
+    @FXML
+    private Spinner<Integer> weightSpinner;
+    @FXML
+    private Spinner<Integer> ageSpinner;
+    @FXML
+    private ComboBox<String> activityComboBox;
+    @FXML
+    private Label bmiLabel;
+    @FXML
+    private Label bmrLabel;
+    @FXML
+    private Label caloriesLabel;
+    @FXML
+    private Button saveBtn;
+    @FXML
+    private Button editBtn;
+    @FXML
+    private VBox bodyDataCard;
+
+    private BodyDataService bodyDataService;
+    private NutritionService nutritionService;
+
+    public void setServices(BodyDataService bodyDataService, NutritionService nutritionService) {
+        this.bodyDataService = bodyDataService;
+        this.nutritionService = nutritionService;
+        initData();
+    }
+
+    private void initData() {
+        bodyDataCard.setDisable(true);
+        BodyData data = bodyDataService.getBodyData();
+        if (data != null) {
+            heightSpinner.getValueFactory().setValue((int) data.getHeight());
+            weightSpinner.getValueFactory().setValue((int) data.getWeight());
+            ageSpinner.getValueFactory().setValue(data.getAge());
+            activityComboBox.setValue(ActivityLevel.valueOf(data.getActivityLevel()).getLabel());
+            updateCalculations();
+        }
+    }
+
+    @FXML
+    private void initialize() {
+        heightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 250, 165));
+        weightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(30, 200, 55));
+        ageSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 25));
+        activityComboBox.getItems().addAll("久坐型", "轻度活动", "中度活动", "高度活动");
+        activityComboBox.setValue("中度活动");
+    }
+
+    @FXML
+    private void handleSave() {
+        BodyData bodyData = new BodyData();
+        bodyData.setUserId(1);
+        bodyData.setHeight(heightSpinner.getValue().doubleValue());
+        bodyData.setWeight(weightSpinner.getValue().doubleValue());
+        bodyData.setAge(ageSpinner.getValue());
+        bodyData.setActivityLevel(ActivityLevel.fromLabel(activityComboBox.getValue()).name());
+        bodyData.setCreateTime(LocalDateTime.now());
+        bodyData.setUpdateTime(LocalDateTime.now());
+
+        updateCalculations(bodyData);
+        bodyDataService.saveBodyData(bodyData);
+        bodyDataCard.setDisable(true);
+        showAlert("保存成功");
+    }
+
+    @FXML
+    private void handleEdit() {
+        bodyDataCard.setDisable(false);
+    }
+
+    private void updateCalculations() {
+        double height = heightSpinner.getValue().doubleValue();
+        double weight = weightSpinner.getValue().doubleValue();
+        int age = ageSpinner.getValue();
+        ActivityLevel level = ActivityLevel.fromLabel(activityComboBox.getValue());
+
+        double bmi = BmiBmrCalculator.calculateBmi(height, weight);
+        double bmr = BmiBmrCalculator.calculateBmrFemale(height, weight, age);
+        int minCal = BmiBmrCalculator.calculateRecommendedCaloriesMin(bmr, level);
+        int maxCal = BmiBmrCalculator.calculateRecommendedCaloriesMax(bmr, level);
+
+        bmiLabel.setText(String.format("BMI: %.2f (%s)", bmi, BmiBmrCalculator.getBmiCategory(bmi)));
+        bmrLabel.setText(String.format("基础代谢: %.0f kcal", bmr));
+        caloriesLabel.setText(String.format("推荐热量: %d-%d kcal", minCal, maxCal));
+    }
+
+    private void updateCalculations(BodyData bodyData) {
+        ActivityLevel level = ActivityLevel.fromLabel(activityComboBox.getValue());
+        double bmi = BmiBmrCalculator.calculateBmi(bodyData.getHeight(), bodyData.getWeight());
+        double bmr = BmiBmrCalculator.calculateBmrFemale(bodyData.getHeight(), bodyData.getWeight(), bodyData.getAge());
+
+        bodyData.setBmi(bmi);
+        bodyData.setBmr(bmr);
+        bodyData.setRecommendedCaloriesMin(BmiBmrCalculator.calculateRecommendedCaloriesMin(bmr, level));
+        bodyData.setRecommendedCaloriesMax(BmiBmrCalculator.calculateRecommendedCaloriesMax(bmr, level));
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("提示");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}

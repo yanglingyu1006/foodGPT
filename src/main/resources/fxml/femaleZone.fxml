@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <Label text="女性专区" styleClass="section-title"/>
+    
+    <VBox spacing="10" styleClass="card">
+        <Label fx:id="cyclePhaseLabel" styleClass="phase-label"/>
+    </VBox>
+    
+    <VBox spacing="10" styleClass="card">
+        <Label text="记录生理周期"/>
+        <GridPane hgap="10" vgap="10">
+            <Label text="开始日期:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <DatePicker fx:id="startDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="150"/>
+            
+            <Label text="周期长度(天):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Spinner fx:id="cycleLengthSpinner" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="150"/>
+        </GridPane>
+        <Button fx:id="saveCycleBtn" text="保存周期" onAction="#handleSaveCycle"/>
+    </VBox>
+    
+    <VBox spacing="10" styleClass="card">
+        <Label text="健康目标"/>
+        <RadioButton fx:id="weightLossRadio" text="减脂" toggleGroup="$goalToggleGroup"/>
+        <RadioButton fx:id="muscleGainRadio" text="增肌" toggleGroup="$goalToggleGroup"/>
+        <RadioButton fx:id="maintainRadio" text="维持" toggleGroup="$goalToggleGroup"/>
+    </VBox>
+</VBox>

@@ -1,0 +1,9 @@
+.dashboard-card {
+    -fx-background-color: linear-gradient(to bottom right, #E8F5E9, #C8E6C9);
+}
+
+.dashboard-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2E7D32;
+}

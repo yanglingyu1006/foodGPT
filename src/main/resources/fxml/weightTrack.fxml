@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <Label text="体重追踪" styleClass="section-title"/>
+    
+    <VBox spacing="10" styleClass="card">
+        <GridPane hgap="10" vgap="10">
+            <Label text="体重(kg):" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Spinner fx:id="weightInput" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="150"/>
+            
+            <Label text="日期:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <DatePicker fx:id="datePicker" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="150"/>
+        </GridPane>
+        <Button fx:id="addBtn" text="添加记录" onAction="#handleAdd"/>
+    </VBox>
+    
+    <VBox spacing="10" styleClass="card">
+        <Label text="体重趋势图"/>
+        <LineChart fx:id="weightChart" prefHeight="300">
+            <xAxis>
+                <CategoryAxis label="日期"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis label="体重(kg)"/>
+            </yAxis>
+        </LineChart>
+    </VBox>
+    
+    <VBox spacing="10" styleClass="card">
+        <Label text="最近记录"/>
+        <ListView fx:id="recordListView" prefHeight="200"/>
+        <Button text="删除选中" onAction="#handleDelete"/>
+    </VBox>
+</VBox>
