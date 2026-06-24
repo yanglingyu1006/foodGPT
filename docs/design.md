@@ -10,7 +10,7 @@
 | 框架 | JavaFX | 21 |
 | ORM | MyBatis-Plus | 3.5.5 |
 | 数据库 | SQLite | 3.x |
-| HTTP客户端 | OkHttp | 4.12.0 |
+| HTTP客户端 | OpenAI SDK | 4.12.0 |
 | JSON处理 | Jackson | 2.16.0 |
 | 图标库 | Ikonli | 12.3.1 |
 
@@ -125,6 +125,105 @@ foodGPT/                              # 项目根目录
                                    API调用（搜索/AI）
                                         ↓
                                   返回数据 → Service → Controller → View展示
+```
+
+### 1.5 架构设计图
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         食物语（FoodGPT）桌面应用                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                         View 层 (JavaFX)                        │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │   │
+│  │  │ Dashboard│ │ MealRec  │ │ Recipe   │ │ Nutrition│           │   │
+│  │  │   FXML   │ │   FXML   │ │   FXML   │ │   FXML   │    ...    │   │
+│  │  │ +Controller│ +Controller│ +Controller│ +Controller│           │   │
+│  │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘           │   │
+│  │       │            │            │            │                   │   │
+│  └───────┼────────────┼────────────┼────────────┼───────────────────┘   │
+│          │            │            │            │                       │
+│  ┌───────▼────────────▼────────────▼────────────▼───────────────────┐   │
+│  │                       Controller 层                              │   │
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐              │   │
+│  │  │ BodyDataCtrl │ │ MealRecordCtrl│ │ RecipeCtrl   │    ...       │   │
+│  │  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘              │   │
+│  │         │                │                │                      │   │
+│  └─────────┼────────────────┼────────────────┼───────────────────────┘   │
+│            │                │                │                          │
+│  ┌─────────▼────────────────▼────────────────▼───────────────────────┐   │
+│  │                        Service 层                                 │   │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │   │
+│  │  │BodyDataServ │ │RecipeService│ │NutritionServ│ │ AiAdvisor   │ │   │
+│  │  │WeightTrack  │ │MealRecordServ│ │ CycleService│ │   Service   │ │   │
+│  │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ │   │
+│  │         │               │               │               │        │   │
+│  └─────────┼───────────────┼───────────────┼───────────────┼────────┘   │
+│            │               │               │               │            │
+│  ┌─────────▼───────────────▼───────────────▼───────────────▼────────┐   │
+│  │                        Mapper 层 (MyBatis-Plus)                  │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │   │
+│  │  │BodyMapper│ │RecipeMap │ │MealMapper│ │CycleMapper│    ...     │   │
+│  │  └─────┬────┘ └─────┬────┘ └─────┬────┘ └─────┬────┘            │   │
+│  └─────────┼───────────┼───────────┼─────────────┼──────────────────┘   │
+│            │           │           │             │                      │
+│  ┌─────────▼───────────▼───────────▼─────────────▼──────────────────┐   │
+│  │                    Config / Util 层                              │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │   │
+│  │  │AppConfig │ │ApiConfig │ │JsonUtil  │ │Calculator│    ...     │   │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘            │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                              外部依赖                                    │
+│  ┌──────────────────┐           ┌──────────────────┐                   │
+│  │   SQLite 数据库   │           │   DeepSeek API   │                   │
+│  │  data/foodgpt.db │           │   (AI咨询)        │                   │
+│  └──────────────────┘           └──────────────────┘                   │
+│                                    ┌──────────────────┐                 │
+│                                    │   菜谱搜索API    │                 │
+│                                    └──────────────────┘                 │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**架构层次说明**：
+
+| 层级 | 职责 | 技术实现 | 关键组件 |
+|------|------|----------|----------|
+| **View层** | 界面展示与用户交互 | JavaFX FXML + Controller | Dashboard、MealRecord、Recipe等FXML视图 |
+| **Controller层** | 事件处理与视图逻辑 | JavaFX Controller类 | BodyDataCtrl、MealRecordCtrl、AiAdvisorCtrl等 |
+| **Service层** | 业务逻辑处理 | Spring Service | BodyDataService、NutritionService、AiAdvisorService等 |
+| **Mapper层** | 数据库访问 | MyBatis-Plus BaseMapper | BodyDataMapper、RecipeMapper、CycleRecordMapper等 |
+| **Config层** | 配置管理 | JSON配置文件 + Java类 | AppConfig、ApiConfig、DatabaseConfig |
+| **Util层** | 工具类支持 | 静态方法类 | BmiBmrCalculator、JsonUtil、OkHttpUtil |
+
+**数据流转路径**：
+
+```
+用户操作
+    │
+    ▼
+[View层] FXML界面接收用户输入
+    │
+    ▼
+[Controller层] 处理事件，调用Service
+    │
+    ▼
+[Service层] 执行业务逻辑
+    │
+    ├─→ [Mapper层] 查询/更新数据库
+    │           │
+    │           ▼
+    │      SQLite数据库
+    │
+    ├─→ [外部API] 调用DeepSeek/菜谱搜索
+    │           │
+    │           ▼
+    │      API响应数据
+    │
+    ▼
+返回数据 → Service → Controller → View更新展示
 ```
 
 ---
@@ -1029,86 +1128,63 @@ public interface AiAdvisorService {
 package com.foodgpt.service.impl;
 
 import com.foodgpt.config.ApiConfig;
-import com.foodgpt.dto.AiChatDTO;
 import com.foodgpt.service.AiAdvisorService;
-import com.foodgpt.util.JsonUtil;
-import okhttp3.*;
 import com.foodgpt.config.AppConfig;
-import java.util.concurrent.TimeUnit;
+import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.ChatCompletion;
+import com.openai.models.ChatCompletionCreateParams;
+import com.openai.models.ChatCompletionMessage;
+import com.openai.models.ChatCompletionMessageParam;
 
-import java.io.IOException;
+import java.util.List;
 
 public class AiAdvisorServiceImpl implements AiAdvisorService {
 
-    private final OkHttpClient client;
+    private final OpenAIClient client;
     private final ApiConfig apiConfig;
 
     public AiAdvisorServiceImpl() {
-       this.client = new OkHttpClient.Builder()
-           .connectTimeout(10, TimeUnit.SECONDS)
-           .readTimeout(30, TimeUnit.SECONDS)
-           .build();
         this.apiConfig = AppConfig.load().getApi();
+        this.client = OpenAIOkHttpClient.builder()
+                .baseUrl(apiConfig.getDeepseek().getBaseUrl())
+                .apiKey(apiConfig.getDeepseek().getApiKey())
+                .build();
     }
 
     @Override
     public String getAdvice(String userMessage) {
         String systemPrompt = buildSystemPrompt();
-        
-        AiChatDTO request = AiChatDTO.builder()
-                .messages(List.of(
-                        AiChatDTO.Message.builder()
-                                .content(systemPrompt)
-                                .role("system")
-                                .build(),
-                        AiChatDTO.Message.builder()
-                                .content(userMessage)
-                                .role("user")
-                                .build()
-                ))
+
+        // 构建消息列表
+        List<ChatCompletionMessageParam> messages = List.of(
+                ChatCompletionMessageParam.builder()
+                        .content(systemPrompt)
+                        .role(ChatCompletionMessage.Role.SYSTEM)
+                        .build(),
+                ChatCompletionMessageParam.builder()
+                        .content(userMessage)
+                        .role(ChatCompletionMessage.Role.USER)
+                        .build()
+        );
+
+        // 构建请求参数
+        ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
                 .model(apiConfig.getDeepseek().getModel())
-                .thinking(AiChatDTO.Thinking.builder().type("enabled").build())
-                .reasoningEffort("high")
-                .maxTokens(apiConfig.getDeepseek().getMaxTokens())
-                .responseFormat(AiChatDTO.ResponseFormat.builder().type("text").build())
-                .stream(false)
+                .messages(messages)
+                .maxCompletionTokens(apiConfig.getDeepseek().getMaxTokens())
                 .temperature(apiConfig.getDeepseek().getTemperature())
-                .topP(1.0)
                 .build();
 
-        return executeRequest(request);
+        // 发送请求并获取响应
+        ChatCompletion completion = client.chat().completions().create(params);
+
+        // 提取回复内容
+        return completion.choices().get(0).message().content().orElse("抱歉，我暂时无法提供建议。");
     }
 
     private String buildSystemPrompt() {
         return "你是一位专业的女性健康饮食顾问。请根据用户的身体数据、生理周期阶段、健康目标和饮食偏好，提供个性化的饮食建议。建议内容要具体、实用，包含食材推荐和摄入量建议。";
-    }
-
-    private String executeRequest(AiChatDTO request) {
-        MediaType mediaType = MediaType.parse("application/json");
-        String jsonBody = JsonUtil.toJson(request);
-        
-        RequestBody body = RequestBody.create(mediaType, jsonBody);
-        Request httpRequest = new Request.Builder()
-                .url(apiConfig.getDeepseek().getBaseUrl())
-                .method("POST", body)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json")
-                .addHeader("Authorization", "Bearer " + apiConfig.getDeepseek().getApiKey())
-                .build();
-
-        try (Response response = client.newCall(httpRequest).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                return parseResponse(response.body().string());
-            }
-            throw new RuntimeException("API调用失败: " + response.code());
-        } catch (IOException e) {
-            throw new RuntimeException("网络请求失败", e);
-        }
-    }
-
-    private String parseResponse(String responseJson) {
-        // 解析DeepSeek API响应，提取content字段
-        return JsonUtil.extractValue(responseJson, "choices[0].message.content");
     }
 
     @Override
@@ -1409,23 +1485,3 @@ public class FoodGPTApplication extends Application {
 ```
 
 ---
-
-## 附录：接口调用示例
-
-### DeepSeek API调用示例
-
-```java
-OkHttpClient client = new OkHttpClient().newBuilder().build();
-MediaType mediaType = MediaType.parse("application/json");
-RequestBody body = RequestBody.create(mediaType, "{\n  \"messages\": [\n    {\n      \"content\": \"You are a helpful assistant\",\n      \"role\": \"system\"\n    },\n    {\n      \"content\": \"Hi\",\n      \"role\": \"user\"\n    }\n  ],\n  \"model\": \"deepseek-v4-pro\",\n  \"thinking\": {\n    \"type\": \"enabled\"\n  },\n  \"reasoning_effort\": \"high\",\n  \"max_tokens\": 4096,\n  \"response_format\": {\n    \"type\": \"text\"\n  },\n  \"stop\": null,\n  \"stream\": false,\n  \"stream_options\": null,\n  \"temperature\": 1,\n  \"top_p\": 1,\n  \"tools\": null,\n  \"tool_choice\": \"none\",\n  \"logprobs\": false,\n  \"top_logprobs\": null\n}");
-Request request = new Request.Builder()
-  .url("https://api.deepseek.com/chat/completions")
-  .method("POST", body)
-  .addHeader("Content-Type", "application/json")
-  .addHeader("Accept", "application/json")
-  .addHeader("Authorization", "Bearer <TOKEN>")
-  .build();
-Response response = client.newCall(request).execute();
-```
-
-**说明**：上述代码已封装在 `AiAdvisorServiceImpl` 中，实际使用时通过 `AiAdvisorService` 接口调用。
