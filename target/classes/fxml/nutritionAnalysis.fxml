@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <Label text="营养分析" styleClass="section-title"/>
+    
+    <HBox spacing="10">
+        <DatePicker fx:id="datePicker"/>
+        <Button text="刷新" onAction="#handleRefresh"/>
+    </HBox>
+    
+    <VBox spacing="10" styleClass="card">
+        <Label text="营养摄入"/>
+        <BarChart fx:id="nutritionChart" prefHeight="300">
+            <xAxis>
+                <CategoryAxis label="餐型"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis label="克数"/>
+            </yAxis>
+        </BarChart>
+    </VBox>
+    
+    <VBox spacing="5" styleClass="card">
+        <Label fx:id="proteinLabel"/>
+        <Label fx:id="carbLabel"/>
+        <Label fx:id="fatLabel"/>
+        <Label fx:id="caloriesLabel"/>
+        <Label fx:id="balanceScoreLabel"/>
+    </VBox>
+</VBox>

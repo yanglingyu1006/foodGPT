@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <Label text="AI饮食顾问" styleClass="section-title"/>
+    
+    <VBox styleClass="card" VBox.vgrow="ALWAYS">
+        <ListView fx:id="messageListView" prefHeight="500"/>
+    </VBox>
+    
+    <HBox spacing="10">
+        <TextField fx:id="inputField" promptText="输入您的问题..." HBox.hgrow="ALWAYS"/>
+        <Button fx:id="sendBtn" text="发送" onAction="#handleSend"/>
+    </HBox>
+</VBox>

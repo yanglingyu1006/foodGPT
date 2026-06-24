@@ -1,0 +1,9 @@
+.nutrition-chart {
+    -fx-background-color: white;
+}
+
+.balance-score {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FF9800;
+}

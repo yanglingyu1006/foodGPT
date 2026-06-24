@@ -1,0 +1,29 @@
+{
+  "database": {
+    "path": "data/foodgpt.db",
+    "autoCreate": true
+  },
+  "api": {
+    "deepseek": {
+      "baseUrl": "https://api.deepseek.com/chat/completions",
+      "apiKey": "",
+      "model": "deepseek-v4-pro",
+      "maxTokens": 4096,
+      "temperature": 1.0
+    },
+    "recipeSearch": {
+      "baseUrl": "",
+      "apiKey": ""
+    }
+  },
+  "app": {
+    "theme": "light",
+    "language": "zh_CN",
+    "autoCheckUpdate": true,
+    "dataBackupInterval": 7
+  },
+  "user": {
+    "id": 1,
+    "name": ""
+  }
+}

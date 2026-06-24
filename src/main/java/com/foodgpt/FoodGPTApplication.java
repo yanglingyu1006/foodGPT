@@ -1,8 +1,10 @@
 package com.foodgpt;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.MybatisSqlSessionFactoryBuilder;
+import com.baomidou.mybatisplus.extension.MybatisMapWrapperFactory;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.foodgpt.config.AppConfig;
 import com.foodgpt.controller.*;
 import com.foodgpt.mapper.*;
@@ -15,15 +17,18 @@ import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
+import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory;
+import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.sqlite.SQLiteDataSource;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 public class FoodGPTApplication extends Application {
 
@@ -107,21 +112,29 @@ public class FoodGPTApplication extends Application {
             Files.createDirectories(dataDir);
         }
 
-        SQLiteDataSource dataSource = new SQLiteDataSource();
-        dataSource.setUrl("jdbc:sqlite:data/foodgpt.db");
+        Properties props = new Properties();
+        props.setProperty("driver", "org.sqlite.JDBC");
+        props.setProperty("url", "jdbc:sqlite:data/foodgpt.db");
 
-        MybatisSqlSessionFactoryBean factoryBean = new MybatisSqlSessionFactoryBean();
-        factoryBean.setDataSource(dataSource);
+        PooledDataSourceFactory dataSourceFactory = new PooledDataSourceFactory();
+        dataSourceFactory.setProperties(props);
 
-        MybatisConfiguration configuration = new MybatisConfiguration();
+        Environment environment = new Environment(
+                "development",
+                new JdbcTransactionFactory(),
+                dataSourceFactory.getDataSource()
+        );
+
+        MybatisConfiguration configuration = new MybatisConfiguration(environment);
         configuration.setMapUnderscoreToCamelCase(true);
+        configuration.setObjectWrapperFactory(new MybatisMapWrapperFactory());
         configuration.addMappers("com.foodgpt.mapper");
-        factoryBean.setConfiguration(configuration);
 
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        factoryBean.setPlugins(interceptor);
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
+        configuration.addInterceptor(interceptor);
 
-        sqlSessionFactory = factoryBean.getObject();
+        sqlSessionFactory = new MybatisSqlSessionFactoryBuilder().build(configuration);
 
         executeSchema();
     }
