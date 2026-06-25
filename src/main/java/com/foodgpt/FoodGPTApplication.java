@@ -43,9 +43,6 @@ public class FoodGPTApplication extends Application {
     private FemaleZoneController femaleZoneController;
     private AiAdvisorController aiAdvisorController;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {

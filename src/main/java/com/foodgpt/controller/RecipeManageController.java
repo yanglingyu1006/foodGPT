@@ -28,31 +28,33 @@ public class RecipeManageController {
 
     public void setService(RecipeService recipeService) {
         this.recipeService = recipeService;
-        loadRecipes();
-    }
-
-    private void loadRecipes() {
-        List<Recipe> recipes = recipeService.getAllRecipes();
-        ObservableList<Recipe> items = FXCollections.observableArrayList(recipes);
-        recipeListView.setItems(items);
-        recipeListView.setCellFactory(param -> new ListCell<Recipe>() {
-            @Override
-            protected void updateItem(Recipe item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    String category = RecipeCategory.valueOf(item.getCategory()).getLabel();
-                    setText(String.format("%s - %s - %d kcal", item.getName(), category, item.getCalories()));
-                }
-            }
-        });
     }
 
     @FXML
     private void initialize() {
         categoryComboBox.getItems().addAll("全部", "早餐", "午餐", "晚餐", "加餐", "其他");
         categoryComboBox.setValue("全部");
+        loadRecipes();
+    }
+
+    private void loadRecipes() {
+        if (recipeService != null && recipeListView != null) {
+            List<Recipe> recipes = recipeService.getAllRecipes();
+            ObservableList<Recipe> items = FXCollections.observableArrayList(recipes);
+            recipeListView.setItems(items);
+            recipeListView.setCellFactory(param -> new ListCell<Recipe>() {
+                @Override
+                protected void updateItem(Recipe item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        String category = RecipeCategory.valueOf(item.getCategory()).getLabel();
+                        setText(String.format("%s - %s - %d kcal", item.getName(), category, item.getCalories()));
+                    }
+                }
+            });
+        }
     }
 
     @FXML

@@ -32,18 +32,6 @@ public class BodyDataController {
 
     public void setService(BodyDataService bodyDataService) {
         this.bodyDataService = bodyDataService;
-        loadData();
-    }
-
-    private void loadData() {
-        BodyData data = bodyDataService.getBodyData();
-        if (data != null) {
-            heightSpinner.getValueFactory().setValue((int) data.getHeight());
-            weightSpinner.getValueFactory().setValue((int) data.getWeight());
-            ageSpinner.getValueFactory().setValue(data.getAge());
-            activityComboBox.setValue(ActivityLevel.valueOf(data.getActivityLevel()).getLabel());
-            updateCalculations();
-        }
     }
 
     @FXML
@@ -53,6 +41,28 @@ public class BodyDataController {
         ageSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 25));
         activityComboBox.getItems().addAll("久坐型", "轻度活动", "中度活动", "高度活动");
         activityComboBox.setValue("中度活动");
+        loadData();
+    }
+
+    private void loadData() {
+        if (bodyDataService != null) {
+            BodyData data = bodyDataService.getBodyData();
+            if (data != null) {
+                if (heightSpinner != null) {
+                    heightSpinner.getValueFactory().setValue((int) data.getHeight().doubleValue());
+                }
+                if (weightSpinner != null) {
+                    weightSpinner.getValueFactory().setValue((int) data.getWeight().doubleValue());
+                }
+                if (ageSpinner != null) {
+                    ageSpinner.getValueFactory().setValue(data.getAge());
+                }
+                if (activityComboBox != null) {
+                    activityComboBox.setValue(ActivityLevel.valueOf(data.getActivityLevel()).getLabel());
+                }
+                updateCalculations();
+            }
+        }
     }
 
     @FXML

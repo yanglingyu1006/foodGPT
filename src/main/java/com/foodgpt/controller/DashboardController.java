@@ -43,19 +43,6 @@ public class DashboardController {
     public void setServices(BodyDataService bodyDataService, NutritionService nutritionService) {
         this.bodyDataService = bodyDataService;
         this.nutritionService = nutritionService;
-        initData();
-    }
-
-    private void initData() {
-        bodyDataCard.setDisable(true);
-        BodyData data = bodyDataService.getBodyData();
-        if (data != null) {
-            heightSpinner.getValueFactory().setValue((int) data.getHeight());
-            weightSpinner.getValueFactory().setValue((int) data.getWeight());
-            ageSpinner.getValueFactory().setValue(data.getAge());
-            activityComboBox.setValue(ActivityLevel.valueOf(data.getActivityLevel()).getLabel());
-            updateCalculations();
-        }
     }
 
     @FXML
@@ -65,6 +52,31 @@ public class DashboardController {
         ageSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 25));
         activityComboBox.getItems().addAll("久坐型", "轻度活动", "中度活动", "高度活动");
         activityComboBox.setValue("中度活动");
+        loadData();
+    }
+
+    private void loadData() {
+        if (bodyDataCard != null) {
+            bodyDataCard.setDisable(true);
+        }
+        if (bodyDataService != null) {
+            BodyData data = bodyDataService.getBodyData();
+            if (data != null) {
+                if (heightSpinner != null) {
+                    heightSpinner.getValueFactory().setValue((int) data.getHeight().doubleValue());
+                }
+                if (weightSpinner != null) {
+                    weightSpinner.getValueFactory().setValue((int) data.getWeight().doubleValue());
+                }
+                if (ageSpinner != null) {
+                    ageSpinner.getValueFactory().setValue(data.getAge());
+                }
+                if (activityComboBox != null) {
+                    activityComboBox.setValue(ActivityLevel.valueOf(data.getActivityLevel()).getLabel());
+                }
+                updateCalculations();
+            }
+        }
     }
 
     @FXML

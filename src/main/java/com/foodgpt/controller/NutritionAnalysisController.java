@@ -41,65 +41,79 @@ public class NutritionAnalysisController {
     public void setServices(MealRecordService mealRecordService, RecipeService recipeService) {
         this.mealRecordService = mealRecordService;
         this.recipeService = recipeService;
-        loadData();
-    }
-
-    private void loadData() {
-        LocalDate date = datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now();
-        List<MealRecord> records = mealRecordService.getMealRecords(date, null);
-
-        double totalProtein = 0, totalCarb = 0, totalFat = 0;
-        int totalCalories = 0;
-
-        XYChart.Series<String, Number> proteinSeries = new XYChart.Series<>();
-        proteinSeries.setName("蛋白质");
-        XYChart.Series<String, Number> carbSeries = new XYChart.Series<>();
-        carbSeries.setName("碳水");
-        XYChart.Series<String, Number> fatSeries = new XYChart.Series<>();
-        fatSeries.setName("脂肪");
-
-        for (MealType mealType : MealType.values()) {
-            double mealProtein = 0, mealCarb = 0, mealFat = 0;
-            for (MealRecord record : records) {
-                if (mealType.name().equals(record.getMealType())) {
-                    Recipe recipe = recipeService.getRecipeById(record.getRecipeId());
-                    if (recipe != null) {
-                        double portion = record.getPortion();
-                        mealProtein += (recipe.getProtein() != null ? recipe.getProtein() : 0) * portion;
-                        mealCarb += (recipe.getCarbohydrate() != null ? recipe.getCarbohydrate() : 0) * portion;
-                        mealFat += (recipe.getFat() != null ? recipe.getFat() : 0) * portion;
-                    }
-                }
-            }
-            proteinSeries.getData().add(new XYChart.Data<>(mealType.getLabel(), mealProtein));
-            carbSeries.getData().add(new XYChart.Data<>(mealType.getLabel(), mealCarb));
-            fatSeries.getData().add(new XYChart.Data<>(mealType.getLabel(), mealFat));
-
-            totalProtein += mealProtein;
-            totalCarb += mealCarb;
-            totalFat += mealFat;
-        }
-
-        totalCalories = (int) NutritionCalculator.calculateCalories(totalProtein, totalCarb, totalFat);
-
-        nutritionChart.getData().clear();
-        nutritionChart.getData().addAll(proteinSeries, carbSeries, fatSeries);
-
-        double proteinRatio = totalCalories > 0 ? (totalProtein * 4) / totalCalories : 0;
-        double carbRatio = totalCalories > 0 ? (totalCarb * 4) / totalCalories : 0;
-        double fatRatio = totalCalories > 0 ? (totalFat * 9) / totalCalories : 0;
-        double balanceScore = NutritionCalculator.calculateBalanceScore(proteinRatio, carbRatio, fatRatio);
-
-        proteinLabel.setText(String.format("蛋白质: %.1f g (%.0f%%)", totalProtein, proteinRatio * 100));
-        carbLabel.setText(String.format("碳水: %.1f g (%.0f%%)", totalCarb, carbRatio * 100));
-        fatLabel.setText(String.format("脂肪: %.1f g (%.0f%%)", totalFat, fatRatio * 100));
-        caloriesLabel.setText(String.format("热量: %d kcal", totalCalories));
-        balanceScoreLabel.setText(String.format("均衡度: %.1f", balanceScore));
     }
 
     @FXML
     private void initialize() {
         datePicker.setValue(LocalDate.now());
+        loadData();
+    }
+
+    private void loadData() {
+        if (mealRecordService != null && recipeService != null) {
+            LocalDate date = datePicker != null ? (datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now()) : LocalDate.now();
+            List<MealRecord> records = mealRecordService.getMealRecords(date, null);
+
+            double totalProtein = 0, totalCarb = 0, totalFat = 0;
+            int totalCalories = 0;
+
+            XYChart.Series<String, Number> proteinSeries = new XYChart.Series<>();
+            proteinSeries.setName("蛋白质");
+            XYChart.Series<String, Number> carbSeries = new XYChart.Series<>();
+            carbSeries.setName("碳水");
+            XYChart.Series<String, Number> fatSeries = new XYChart.Series<>();
+            fatSeries.setName("脂肪");
+
+            for (MealType mealType : MealType.values()) {
+                double mealProtein = 0, mealCarb = 0, mealFat = 0;
+                for (MealRecord record : records) {
+                    if (mealType.name().equals(record.getMealType())) {
+                        Recipe recipe = recipeService.getRecipeById(record.getRecipeId());
+                        if (recipe != null) {
+                            double portion = record.getPortion();
+                            mealProtein += (recipe.getProtein() != null ? recipe.getProtein() : 0) * portion;
+                            mealCarb += (recipe.getCarbohydrate() != null ? recipe.getCarbohydrate() : 0) * portion;
+                            mealFat += (recipe.getFat() != null ? recipe.getFat() : 0) * portion;
+                        }
+                    }
+                }
+                proteinSeries.getData().add(new XYChart.Data<>(mealType.getLabel(), mealProtein));
+                carbSeries.getData().add(new XYChart.Data<>(mealType.getLabel(), mealCarb));
+                fatSeries.getData().add(new XYChart.Data<>(mealType.getLabel(), mealFat));
+
+                totalProtein += mealProtein;
+                totalCarb += mealCarb;
+                totalFat += mealFat;
+            }
+
+            totalCalories = (int) NutritionCalculator.calculateCalories(totalProtein, totalCarb, totalFat);
+
+            if (nutritionChart != null) {
+                nutritionChart.getData().clear();
+                nutritionChart.getData().addAll(proteinSeries, carbSeries, fatSeries);
+            }
+
+            double proteinRatio = totalCalories > 0 ? (totalProtein * 4) / totalCalories : 0;
+            double carbRatio = totalCalories > 0 ? (totalCarb * 4) / totalCalories : 0;
+            double fatRatio = totalCalories > 0 ? (totalFat * 9) / totalCalories : 0;
+            double balanceScore = NutritionCalculator.calculateBalanceScore(proteinRatio, carbRatio, fatRatio);
+
+            if (proteinLabel != null) {
+                proteinLabel.setText(String.format("蛋白质: %.1f g (%.0f%%)", totalProtein, proteinRatio * 100));
+            }
+            if (carbLabel != null) {
+                carbLabel.setText(String.format("碳水: %.1f g (%.0f%%)", totalCarb, carbRatio * 100));
+            }
+            if (fatLabel != null) {
+                fatLabel.setText(String.format("脂肪: %.1f g (%.0f%%)", totalFat, fatRatio * 100));
+            }
+            if (caloriesLabel != null) {
+                caloriesLabel.setText(String.format("热量: %d kcal", totalCalories));
+            }
+            if (balanceScoreLabel != null) {
+                balanceScoreLabel.setText(String.format("均衡度: %.1f", balanceScore));
+            }
+        }
     }
 
     @FXML

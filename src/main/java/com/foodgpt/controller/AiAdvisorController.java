@@ -26,7 +26,13 @@ public class AiAdvisorController {
 
     public void setService(AiAdvisorService aiAdvisorService) {
         this.aiAdvisorService = aiAdvisorService;
-        messageListView.setItems(messages);
+    }
+
+    @FXML
+    private void initialize() {
+        if (messageListView != null) {
+            messageListView.setItems(messages);
+        }
     }
 
     @FXML

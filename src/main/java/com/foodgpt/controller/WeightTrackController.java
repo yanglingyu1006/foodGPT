@@ -32,45 +32,51 @@ public class WeightTrackController {
 
     public void setService(WeightTrackService weightTrackService) {
         this.weightTrackService = weightTrackService;
-        loadData();
-    }
-
-    private void loadData() {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(30);
-        List<WeightRecord> records = weightTrackService.getWeightRecords(startDate, endDate);
-
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("体重变化");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
-        for (WeightRecord record : records) {
-            series.getData().add(new XYChart.Data<>(record.getRecordDate().format(formatter), record.getWeight()));
-        }
-
-        weightChart.getData().clear();
-        weightChart.getData().add(series);
-
-        List<WeightRecord> recent = weightTrackService.getRecentRecords(10);
-        ObservableList<WeightRecord> items = FXCollections.observableArrayList(recent);
-        recordListView.setItems(items);
-        recordListView.setCellFactory(param -> new ListCell<WeightRecord>() {
-            @Override
-            protected void updateItem(WeightRecord item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(String.format("%s - %.1f kg", item.getRecordDate(), item.getWeight()));
-                }
-            }
-        });
     }
 
     @FXML
     private void initialize() {
         weightInput.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(30, 200, 55, 0.1));
         datePicker.setValue(LocalDate.now());
+        loadData();
+    }
+
+    private void loadData() {
+        if (weightTrackService != null) {
+            LocalDate endDate = LocalDate.now();
+            LocalDate startDate = endDate.minusDays(30);
+            List<WeightRecord> records = weightTrackService.getWeightRecords(startDate, endDate);
+
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
+            series.setName("体重变化");
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+            for (WeightRecord record : records) {
+                series.getData().add(new XYChart.Data<>(record.getRecordDate().format(formatter), record.getWeight()));
+            }
+
+            if (weightChart != null) {
+                weightChart.getData().clear();
+                weightChart.getData().add(series);
+            }
+
+            List<WeightRecord> recent = weightTrackService.getRecentRecords(10);
+            ObservableList<WeightRecord> items = FXCollections.observableArrayList(recent);
+            if (recordListView != null) {
+                recordListView.setItems(items);
+                recordListView.setCellFactory(param -> new ListCell<WeightRecord>() {
+                    @Override
+                    protected void updateItem(WeightRecord item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null);
+                        } else {
+                            setText(String.format("%s - %.1f kg", item.getRecordDate(), item.getWeight()));
+                        }
+                    }
+                });
+            }
+        }
     }
 
     @FXML

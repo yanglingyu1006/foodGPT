@@ -35,41 +35,6 @@ public class MealRecordController {
     public void setServices(MealRecordService mealRecordService, RecipeService recipeService) {
         this.mealRecordService = mealRecordService;
         this.recipeService = recipeService;
-        loadRecipes();
-        loadRecords();
-    }
-
-    private void loadRecipes() {
-        List<Recipe> recipes = recipeService.getAllRecipes();
-        ObservableList<String> names = FXCollections.observableArrayList();
-        for (Recipe r : recipes) {
-            names.add(r.getName());
-        }
-        recipeComboBox.setItems(names);
-    }
-
-    private void loadRecords() {
-        LocalDate date = datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now();
-        String mealType = mealTypeComboBox.getValue();
-        String typeCode = mealType != null ? MealType.fromLabel(mealType).name() : null;
-
-        List<MealRecord> records = mealRecordService.getMealRecords(date, typeCode);
-        ObservableList<MealRecord> items = FXCollections.observableArrayList(records);
-        recordListView.setItems(items);
-        recordListView.setCellFactory(param -> new ListCell<MealRecord>() {
-            @Override
-            protected void updateItem(MealRecord item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    Recipe recipe = recipeService.getRecipeById(item.getRecipeId());
-                    String recipeName = recipe != null ? recipe.getName() : "未知";
-                    String mealTypeLabel = MealType.valueOf(item.getMealType()).getLabel();
-                    setText(String.format("%s - %s - %.1f份", mealTypeLabel, recipeName, item.getPortion()));
-                }
-            }
-        });
     }
 
     @FXML
@@ -78,6 +43,45 @@ public class MealRecordController {
         mealTypeComboBox.getItems().addAll("早餐", "午餐", "晚餐", "加餐");
         mealTypeComboBox.setValue("午餐");
         portionSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 5, 1, 0.1));
+        loadRecipes();
+        loadRecords();
+    }
+
+    private void loadRecipes() {
+        if (recipeService != null && recipeComboBox != null) {
+            List<Recipe> recipes = recipeService.getAllRecipes();
+            ObservableList<String> names = FXCollections.observableArrayList();
+            for (Recipe r : recipes) {
+                names.add(r.getName());
+            }
+            recipeComboBox.setItems(names);
+        }
+    }
+
+    private void loadRecords() {
+        if (mealRecordService != null && recipeService != null && recordListView != null) {
+            LocalDate date = datePicker != null ? (datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now()) : LocalDate.now();
+            String mealType = mealTypeComboBox != null ? mealTypeComboBox.getValue() : null;
+            String typeCode = mealType != null ? MealType.fromLabel(mealType).name() : null;
+
+            List<MealRecord> records = mealRecordService.getMealRecords(date, typeCode);
+            ObservableList<MealRecord> items = FXCollections.observableArrayList(records);
+            recordListView.setItems(items);
+            recordListView.setCellFactory(param -> new ListCell<MealRecord>() {
+                @Override
+                protected void updateItem(MealRecord item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        Recipe recipe = recipeService.getRecipeById(item.getRecipeId());
+                        String recipeName = recipe != null ? recipe.getName() : "未知";
+                        String mealTypeLabel = MealType.valueOf(item.getMealType()).getLabel();
+                        setText(String.format("%s - %s - %.1f份", mealTypeLabel, recipeName, item.getPortion()));
+                    }
+                }
+            });
+        }
     }
 
     @FXML

@@ -34,18 +34,6 @@ public class FemaleZoneController {
 
     public void setService(CycleService cycleService) {
         this.cycleService = cycleService;
-        loadData();
-    }
-
-    private void loadData() {
-        String phase = cycleService.getCurrentPhase();
-        cyclePhaseLabel.setText("当前阶段: " + CyclePhase.valueOf(phase).getLabel());
-
-        CycleRecord current = cycleService.getCurrentCycle();
-        if (current != null) {
-            startDatePicker.setValue(current.getStartDate());
-            cycleLengthSpinner.getValueFactory().setValue(current.getCycleLength());
-        }
     }
 
     @FXML
@@ -56,6 +44,26 @@ public class FemaleZoneController {
         muscleGainRadio.setToggleGroup(goalToggleGroup);
         maintainRadio.setToggleGroup(goalToggleGroup);
         maintainRadio.setSelected(true);
+        loadData();
+    }
+
+    private void loadData() {
+        if (cycleService != null) {
+            String phase = cycleService.getCurrentPhase();
+            if (cyclePhaseLabel != null) {
+                cyclePhaseLabel.setText("当前阶段: " + CyclePhase.valueOf(phase).getLabel());
+            }
+
+            CycleRecord current = cycleService.getCurrentCycle();
+            if (current != null) {
+                if (startDatePicker != null) {
+                    startDatePicker.setValue(current.getStartDate());
+                }
+                if (cycleLengthSpinner != null) {
+                    cycleLengthSpinner.getValueFactory().setValue(current.getCycleLength());
+                }
+            }
+        }
     }
 
     @FXML
