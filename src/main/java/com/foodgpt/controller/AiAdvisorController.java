@@ -33,18 +33,46 @@ public class AiAdvisorController {
         if (messageListView != null) {
             messageListView.setItems(messages);
         }
+        
+        messages.add("AI: 你好！我是你的AI饮食顾问，有什么关于饮食健康的问题可以问我。");
     }
 
     @FXML
     private void handleSend() {
         String message = inputField.getText().trim();
-        if (message.isEmpty()) return;
+        if (message.isEmpty()) {
+            showAlert("请输入问题");
+            return;
+        }
 
+        sendRequest(message);
+    }
+    
+    @FXML
+    private void handleQuickQuestion1() {
+        sendRequest("请给我今日的饮食建议");
+    }
+    
+    @FXML
+    private void handleQuickQuestion2() {
+        sendRequest("如何搭配营养均衡的饮食？");
+    }
+    
+    @FXML
+    private void handleQuickQuestion3() {
+        sendRequest("推荐一些健康的食谱");
+    }
+    
+    private void sendRequest(String message) {
         messages.add("用户: " + message);
-        inputField.clear();
+        if (inputField != null) {
+            inputField.clear();
+        }
         scrollToBottom();
 
-        sendBtn.setDisable(true);
+        if (sendBtn != null) {
+            sendBtn.setDisable(true);
+        }
         messages.add("AI: 正在思考...");
         scrollToBottom();
 
@@ -54,15 +82,25 @@ public class AiAdvisorController {
                 messages.remove(messages.size() - 1);
                 messages.add("AI: " + response);
                 scrollToBottom();
-                sendBtn.setDisable(false);
+                if (sendBtn != null) {
+                    sendBtn.setDisable(false);
+                }
             });
         });
     }
 
     private void scrollToBottom() {
-        if (!messages.isEmpty()) {
+        if (messageListView != null && !messages.isEmpty()) {
             messageListView.scrollTo(messages.size() - 1);
         }
+    }
+    
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("提示");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public void shutdown() {

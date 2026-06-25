@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 public class BodyDataController {
 
     @FXML
-    private Spinner<Integer> heightSpinner;
+    private Spinner<Double> heightSpinner;
     @FXML
-    private Spinner<Integer> weightSpinner;
+    private Spinner<Double> weightSpinner;
     @FXML
     private Spinner<Integer> ageSpinner;
     @FXML
@@ -36,23 +36,31 @@ public class BodyDataController {
 
     @FXML
     private void initialize() {
-        heightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 250, 165));
-        weightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(30, 200, 55));
-        ageSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 25));
-        activityComboBox.getItems().addAll("久坐型", "轻度活动", "中度活动", "高度活动");
-        activityComboBox.setValue("中度活动");
+        if (heightSpinner != null) {
+            heightSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(100.0, 250.0, 165.0, 0.1));
+        }
+        if (weightSpinner != null) {
+            weightSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(30.0, 200.0, 55.0, 0.1));
+        }
+        if (ageSpinner != null) {
+            ageSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 100, 25));
+        }
+        if (activityComboBox != null) {
+            activityComboBox.getItems().addAll("久坐型", "轻度活动", "中度活动", "高度活动");
+            activityComboBox.setValue("中度活动");
+        }
         loadData();
     }
 
     private void loadData() {
         if (bodyDataService != null) {
-            BodyData data = bodyDataService.getBodyData();
+            BodyData data = bodyDataService.getLatestBodyData();
             if (data != null) {
                 if (heightSpinner != null) {
-                    heightSpinner.getValueFactory().setValue((int) data.getHeight().doubleValue());
+                    heightSpinner.getValueFactory().setValue(data.getHeight());
                 }
                 if (weightSpinner != null) {
-                    weightSpinner.getValueFactory().setValue((int) data.getWeight().doubleValue());
+                    weightSpinner.getValueFactory().setValue(data.getWeight());
                 }
                 if (ageSpinner != null) {
                     ageSpinner.getValueFactory().setValue(data.getAge());
@@ -69,8 +77,8 @@ public class BodyDataController {
     private void handleSave() {
         BodyData bodyData = new BodyData();
         bodyData.setUserId(1);
-        bodyData.setHeight(heightSpinner.getValue().doubleValue());
-        bodyData.setWeight(weightSpinner.getValue().doubleValue());
+        bodyData.setHeight(heightSpinner.getValue());
+        bodyData.setWeight(weightSpinner.getValue());
         bodyData.setAge(ageSpinner.getValue());
         bodyData.setActivityLevel(ActivityLevel.fromLabel(activityComboBox.getValue()).name());
         bodyData.setCreateTime(LocalDateTime.now());
@@ -82,8 +90,11 @@ public class BodyDataController {
     }
 
     private void updateCalculations() {
-        double height = heightSpinner.getValue().doubleValue();
-        double weight = weightSpinner.getValue().doubleValue();
+        if (activityComboBox.getValue() == null) {
+            return;
+        }
+        double height = heightSpinner.getValue();
+        double weight = weightSpinner.getValue();
         int age = ageSpinner.getValue();
         ActivityLevel level = ActivityLevel.fromLabel(activityComboBox.getValue());
 
@@ -98,6 +109,9 @@ public class BodyDataController {
     }
 
     private void updateCalculations(BodyData bodyData) {
+        if (activityComboBox.getValue() == null) {
+            return;
+        }
         ActivityLevel level = ActivityLevel.fromLabel(activityComboBox.getValue());
         double bmi = BmiBmrCalculator.calculateBmi(bodyData.getHeight(), bodyData.getWeight());
         double bmr = BmiBmrCalculator.calculateBmrFemale(bodyData.getHeight(), bodyData.getWeight(), bodyData.getAge());

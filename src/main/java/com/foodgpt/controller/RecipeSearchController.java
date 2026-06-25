@@ -1,6 +1,7 @@
 package com.foodgpt.controller;
 
 import com.foodgpt.entity.Recipe;
+import com.foodgpt.service.ExternalRecipeService;
 import com.foodgpt.service.RecipeService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,55 +19,98 @@ public class RecipeSearchController {
     @FXML
     private Button searchBtn;
     @FXML
+    private Button saveBtn;
+    @FXML
     private ListView<Recipe> resultListView;
+    @FXML
+    private RadioButton localRadio;
+    @FXML
+    private RadioButton onlineRadio;
+    @FXML
+    private ToggleGroup searchTypeGroup;
 
     private RecipeService recipeService;
+    private ExternalRecipeService externalRecipeService;
 
     public void setService(RecipeService recipeService) {
         this.recipeService = recipeService;
+    }
+    
+    public void setExternalRecipeService(ExternalRecipeService externalRecipeService) {
+        this.externalRecipeService = externalRecipeService;
+    }
+
+    @FXML
+    private void initialize() {
+        if (localRadio != null && onlineRadio != null) {
+            searchTypeGroup = new ToggleGroup();
+            localRadio.setToggleGroup(searchTypeGroup);
+            onlineRadio.setToggleGroup(searchTypeGroup);
+            localRadio.setSelected(true);
+        }
     }
 
     @FXML
     private void handleSearch() {
         String keyword = searchField.getText();
-        List<Recipe> recipes = recipeService.searchRecipes(keyword, "");
+        if (keyword == null || keyword.trim().isEmpty()) {
+            showAlert("请输入搜索关键词");
+            return;
+        }
+
+        List<Recipe> recipes = new ArrayList<>();
+        
+        if (onlineRadio != null && onlineRadio.isSelected() && externalRecipeService != null) {
+            recipes = externalRecipeService.searchRecipes(keyword);
+            if (recipes.isEmpty()) {
+                showAlert("未找到相关菜谱，请检查API配置或尝试本地搜索");
+            }
+        } else {
+            recipes = recipeService.searchRecipes(keyword, "");
+        }
 
         ObservableList<Recipe> items = FXCollections.observableArrayList(recipes);
-        resultListView.setItems(items);
-        resultListView.setCellFactory(param -> new ListCell<Recipe>() {
-            @Override
-            protected void updateItem(Recipe item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(String.format("%s - %d kcal", item.getName(), item.getCalories()));
+        if (resultListView != null) {
+            resultListView.setItems(items);
+            resultListView.setCellFactory(param -> new ListCell<Recipe>() {
+                @Override
+                protected void updateItem(Recipe item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        String source = item.getSource() != null ? item.getSource() : "本地";
+                        setText(String.format("[%s] %s - %d kcal", source, item.getName(), item.getCalories()));
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @FXML
     private void handleSaveRecipe() {
         Recipe selected = resultListView.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            Recipe newRecipe = new Recipe();
-            newRecipe.setName(selected.getName());
-            newRecipe.setCategory(selected.getCategory());
-            newRecipe.setIngredients(selected.getIngredients());
-            newRecipe.setSteps(selected.getSteps());
-            newRecipe.setProtein(selected.getProtein());
-            newRecipe.setCarbohydrate(selected.getCarbohydrate());
-            newRecipe.setFat(selected.getFat());
-            newRecipe.setCalories(selected.getCalories());
-            newRecipe.setImageUrl(selected.getImageUrl());
-            newRecipe.setDescription(selected.getDescription());
-            newRecipe.setSource(selected.getSource());
-            newRecipe.setCreateTime(LocalDateTime.now());
-
-            recipeService.saveRecipe(newRecipe);
-            showAlert("保存成功");
+        if (selected == null) {
+            showAlert("请先选择要保存的菜谱");
+            return;
         }
+
+        Recipe newRecipe = new Recipe();
+        newRecipe.setName(selected.getName());
+        newRecipe.setCategory(selected.getCategory() != null ? selected.getCategory() : "OTHER");
+        newRecipe.setIngredients(selected.getIngredients() != null ? selected.getIngredients() : new ArrayList<>());
+        newRecipe.setSteps(selected.getSteps() != null ? selected.getSteps() : new ArrayList<>());
+        newRecipe.setProtein(selected.getProtein());
+        newRecipe.setCarbohydrate(selected.getCarbohydrate());
+        newRecipe.setFat(selected.getFat());
+        newRecipe.setCalories(selected.getCalories());
+        newRecipe.setImageUrl(selected.getImageUrl());
+        newRecipe.setDescription(selected.getDescription());
+        newRecipe.setSource(selected.getSource());
+        newRecipe.setCreateTime(LocalDateTime.now());
+
+        recipeService.saveRecipe(newRecipe);
+        showAlert("保存成功");
     }
 
     private void showAlert(String message) {

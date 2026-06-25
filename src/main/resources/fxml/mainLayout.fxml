@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane stylesheets="@../css/main.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.foodgpt.controller.MainLayoutController">
+
+    <!-- ========== 左侧边栏 120px ========== -->
+    <left>
+        <HBox>
+            <VBox prefWidth="120" styleClass="sidebar" spacing="0">
+                <VBox VBox.vgrow="ALWAYS" spacing="16" alignment="CENTER">
+                    <Label text="🍽" styleClass="sidebar-icon"/>
+                    <VBox spacing="0" alignment="CENTER">
+                        <Label text="食" styleClass="sidebar-brand"/>
+                        <Label text="物" styleClass="sidebar-brand"/>
+                        <Label text="语" styleClass="sidebar-brand"/>
+                        <Label text="·" styleClass="sidebar-brand"/>
+                        <Label text="知" styleClass="sidebar-brand"/>
+                        <Label text="味" styleClass="sidebar-brand"/>
+                    </VBox>
+                </VBox>
+                <VBox spacing="2" alignment="CENTER" VBox.vgrow="NEVER">
+                    <Label text="食" styleClass="sidebar-tagline"/>
+                    <Label text="·" styleClass="sidebar-tagline"/>
+                    <Label text="养" styleClass="sidebar-tagline"/>
+                    <Label text="·" styleClass="sidebar-tagline"/>
+                    <Label text="记" styleClass="sidebar-tagline"/>
+                </VBox>
+                <padding><Insets topRightBottomLeft="20"/></padding>
+            </VBox>
+            <!-- 分割线 -->
+            <Separator orientation="VERTICAL" styleClass="sidebar-divider"/>
+        </HBox>
+    </left>
+
+    <!-- ========== 右侧内容区 ========== -->
+    <center>
+        <BorderPane>
+            <top>
+                <HBox styleClass="nav-bar" alignment="CENTER_LEFT" spacing="0">
+                    <Label text="食物语" styleClass="nav-logo"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <HBox fx:id="navTabs" spacing="0" alignment="CENTER">
+                        <Label fx:id="tabDashboard" text="首页" styleClass="nav-tab nav-tab-active" onMouseClicked="#onTabDashboard"/>
+                        <Label fx:id="tabRecipe" text="菜谱" styleClass="nav-tab" onMouseClicked="#onTabRecipe"/>
+                        <Label fx:id="tabMeal" text="记录" styleClass="nav-tab" onMouseClicked="#onTabMeal"/>
+                        <Label fx:id="tabNutrition" text="分析" styleClass="nav-tab" onMouseClicked="#onTabNutrition"/>
+                        <Label fx:id="tabFemale" text="专区" styleClass="nav-tab" onMouseClicked="#onTabFemale"/>
+                        <Label fx:id="tabAI" text="AI顾问" styleClass="nav-tab" onMouseClicked="#onTabAI"/>
+                    </HBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Region styleClass="nav-avatar" prefWidth="36" prefHeight="36"/>
+                </HBox>
+            </top>
+
+            <center>
+                <StackPane fx:id="contentArea">
+                    <padding><Insets topRightBottomLeft="16"/></padding>
+                </StackPane>
+            </center>
+
+            <bottom>
+                <HBox styleClass="status-bar" spacing="32" alignment="CENTER_LEFT">
+                    <HBox spacing="6">
+                        <Label text="今日摄入"/>
+                        <Label fx:id="statusCalories" text="0 kcal" styleClass="status-value"/>
+                    </HBox>
+                    <Separator orientation="VERTICAL"/>
+                    <HBox spacing="6">
+                        <Label text="蛋白质"/>
+                        <Label fx:id="statusProtein" text="0 g" styleClass="status-value"/>
+                    </HBox>
+                    <Separator orientation="VERTICAL"/>
+                    <HBox spacing="6">
+                        <Label text="碳水"/>
+                        <Label fx:id="statusCarb" text="0 g" styleClass="status-value"/>
+                    </HBox>
+                    <Separator orientation="VERTICAL"/>
+                    <HBox spacing="6">
+                        <Label text="脂肪"/>
+                        <Label fx:id="statusFat" text="0 g" styleClass="status-value"/>
+                    </HBox>
+                </HBox>
+            </bottom>
+        </BorderPane>
+    </center>
+</BorderPane>

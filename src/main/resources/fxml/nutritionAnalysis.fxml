@@ -2,32 +2,74 @@
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
-    <Label text="营养分析" styleClass="section-title"/>
-    
-    <HBox spacing="10">
+<VBox spacing="16" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+
+    <!-- 顶部工具栏 -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="营养分析" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
         <DatePicker fx:id="datePicker"/>
-        <Button text="刷新" onAction="#handleRefresh"/>
+        <Button text="刷新" styleClass="btn-outline" onAction="#handleRefresh"/>
     </HBox>
-    
+
+    <!-- 分组柱状图 -->
     <VBox spacing="10" styleClass="card">
-        <Label text="营养摄入"/>
-        <BarChart fx:id="nutritionChart" prefHeight="300">
-            <xAxis>
-                <CategoryAxis label="餐型"/>
-            </xAxis>
-            <yAxis>
-                <NumberAxis label="克数"/>
-            </yAxis>
+        <Label text="各餐次营养素摄入" styleClass="card-title"/>
+        <BarChart fx:id="nutritionChart" prefHeight="280" legendVisible="true" legendSide="BOTTOM">
+            <xAxis><CategoryAxis label="餐次"/></xAxis>
+            <yAxis><NumberAxis label="克数(g)"/></yAxis>
         </BarChart>
     </VBox>
-    
-    <VBox spacing="5" styleClass="card">
-        <Label fx:id="proteinLabel"/>
-        <Label fx:id="carbLabel"/>
-        <Label fx:id="fatLabel"/>
-        <Label fx:id="caloriesLabel"/>
-        <Label fx:id="balanceScoreLabel"/>
-    </VBox>
+
+    <!-- 三大营养素卡片 -->
+    <GridPane hgap="16" vgap="16">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="33"/>
+            <ColumnConstraints percentWidth="33"/>
+            <ColumnConstraints percentWidth="33"/>
+        </columnConstraints>
+
+        <VBox spacing="10" styleClass="card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="蛋白质" styleClass="card-title"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="proteinLabel" text="0 / 0 g" styleClass="nutrition-value"/>
+            </HBox>
+            <ProgressBar fx:id="proteinProgress" prefWidth="200" progress="0"/>
+            <Label text="达标" styleClass="hint-text"/>
+        </VBox>
+
+        <VBox spacing="10" styleClass="card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <Label text="碳水" styleClass="card-title"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="carbLabel" text="0 / 0 g" styleClass="nutrition-value"/>
+            </HBox>
+            <ProgressBar fx:id="carbProgress" prefWidth="200" progress="0"/>
+            <Label text="达标" styleClass="hint-text"/>
+        </VBox>
+
+        <VBox spacing="10" styleClass="card" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <Label text="脂肪" styleClass="card-title"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label fx:id="fatLabel" text="0 / 0 g" styleClass="nutrition-value"/>
+            </HBox>
+            <ProgressBar fx:id="fatProgress" prefWidth="200" progress="0"/>
+            <Label text="达标" styleClass="hint-text"/>
+        </VBox>
+    </GridPane>
+
+    <!-- 总热量与均衡度 -->
+    <HBox spacing="16" alignment="CENTER">
+        <VBox spacing="8" styleClass="card" alignment="CENTER">
+            <Label text="总热量摄入" styleClass="card-title"/>
+            <Label fx:id="caloriesLabel" text="0 / 0 kcal" styleClass="score-label"/>
+            <ProgressBar fx:id="caloriesProgress" prefWidth="200" progress="0"/>
+        </VBox>
+        <VBox spacing="8" styleClass="card" alignment="CENTER">
+            <Label text="均衡度评分" styleClass="card-title"/>
+            <Label fx:id="balanceScoreLabel" text="0" styleClass="score-label"/>
+            <Label text="评分说明：100分为完美均衡" styleClass="hint-text"/>
+        </VBox>
+    </HBox>
 </VBox>

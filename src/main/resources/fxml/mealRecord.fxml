@@ -1,30 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+<VBox spacing="16" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+
+    <!-- 标题 -->
     <Label text="用餐记录" styleClass="section-title"/>
-    
-    <VBox spacing="10" styleClass="card">
-        <GridPane hgap="10" vgap="10">
-            <Label text="日期:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <DatePicker fx:id="datePicker" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="150"/>
-            
-            <Label text="餐型:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <ComboBox fx:id="mealTypeComboBox" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="150"/>
-            
-            <Label text="菜谱:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <ComboBox fx:id="recipeComboBox" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="150"/>
-            
-            <Label text="份量:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-            <Spinner fx:id="portionSpinner" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="150"/>
-        </GridPane>
-        <Button fx:id="addBtn" text="添加记录" onAction="#handleAdd"/>
-    </VBox>
-    
-    <VBox spacing="10" styleClass="card">
-        <Label text="今日记录"/>
-        <ListView fx:id="recordListView" prefHeight="300"/>
-        <Button text="删除选中" onAction="#handleDelete"/>
+
+    <!-- 两栏布局 -->
+    <GridPane hgap="16" vgap="16">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="50"/>
+            <ColumnConstraints percentWidth="50"/>
+        </columnConstraints>
+
+        <!-- 左栏：今日营养汇总 -->
+        <VBox spacing="10" styleClass="card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="今日营养汇总" styleClass="card-title"/>
+            <GridPane hgap="24" vgap="14">
+                <padding><Insets topRightBottomLeft="8"/></padding>
+                <Label text="总热量" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="hint-text"/>
+                <Label fx:id="totalCaloriesLabel" text="0 kcal" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="score-label"/>
+                <Label text="蛋白质" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="hint-text"/>
+                <Label fx:id="totalProteinLabel" text="0 g" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="score-label"/>
+                <Label text="碳水" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="hint-text"/>
+                <Label fx:id="totalCarbLabel" text="0 g" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="score-label"/>
+                <Label text="脂肪" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="hint-text"/>
+                <Label fx:id="totalFatLabel" text="0 g" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="score-label"/>
+            </GridPane>
+        </VBox>
+
+        <!-- 右栏：添加记录 -->
+        <VBox spacing="10" styleClass="card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <Label text="添加记录" styleClass="card-title"/>
+            <GridPane hgap="12" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                <!-- 第一行：日期 | 餐次 -->
+                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label text="日期"/>
+                    <DatePicker fx:id="datePicker" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label text="餐次"/>
+                    <ComboBox fx:id="mealTypeComboBox" maxWidth="Infinity"/>
+                </VBox>
+                <!-- 第二行：菜谱 | 份量 -->
+                <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label text="菜谱"/>
+                    <ComboBox fx:id="recipeComboBox" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label text="份量"/>
+                    <Spinner fx:id="portionSpinner" maxWidth="Infinity"/>
+                </VBox>
+            </GridPane>
+            <Button fx:id="addBtn" text="添加记录" styleClass="btn-primary" onAction="#handleAdd" maxWidth="Infinity"/>
+        </VBox>
+    </GridPane>
+
+    <!-- 今日记录列表 -->
+    <VBox spacing="10" styleClass="card" VBox.vgrow="ALWAYS">
+        <Label text="今日记录" styleClass="card-title"/>
+        <ListView fx:id="recordListView" prefHeight="260" VBox.vgrow="ALWAYS"/>
+        <HBox spacing="10">
+            <Button text="删除选中" styleClass="btn-danger" onAction="#handleDelete"/>
+        </HBox>
     </VBox>
 </VBox>

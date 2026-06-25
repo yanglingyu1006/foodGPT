@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.TilePane;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -23,6 +24,10 @@ public class RecipeManageController {
     private ListView<Recipe> recipeListView;
     @FXML
     private Button searchBtn;
+    @FXML
+    private TilePane recipeTilePane;
+    @FXML
+    private Label pageLabel;
 
     private RecipeService recipeService;
 

@@ -5,6 +5,7 @@ import com.foodgpt.entity.Recipe;
 import com.foodgpt.enums.MealType;
 import com.foodgpt.service.MealRecordService;
 import com.foodgpt.service.RecipeService;
+import com.foodgpt.util.NutritionCalculator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -28,6 +29,14 @@ public class MealRecordController {
     private ListView<MealRecord> recordListView;
     @FXML
     private Button addBtn;
+    @FXML
+    private Label totalCaloriesLabel;
+    @FXML
+    private Label totalProteinLabel;
+    @FXML
+    private Label totalCarbLabel;
+    @FXML
+    private Label totalFatLabel;
 
     private MealRecordService mealRecordService;
     private RecipeService recipeService;
@@ -43,8 +52,17 @@ public class MealRecordController {
         mealTypeComboBox.getItems().addAll("早餐", "午餐", "晚餐", "加餐");
         mealTypeComboBox.setValue("午餐");
         portionSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 5, 1, 0.1));
+        
+        if (datePicker != null) {
+            datePicker.setOnAction(e -> {
+                loadRecords();
+                updateDailySummary();
+            });
+        }
+        
         loadRecipes();
         loadRecords();
+        updateDailySummary();
     }
 
     private void loadRecipes() {
@@ -84,6 +102,41 @@ public class MealRecordController {
         }
     }
 
+    private void updateDailySummary() {
+        if (mealRecordService != null && recipeService != null) {
+            LocalDate date = datePicker != null ? (datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now()) : LocalDate.now();
+            List<MealRecord> records = mealRecordService.getMealRecords(date, null);
+            
+            double totalProtein = 0, totalCarb = 0, totalFat = 0;
+            int totalCalories = 0;
+            
+            for (MealRecord record : records) {
+                Recipe recipe = recipeService.getRecipeById(record.getRecipeId());
+                if (recipe != null) {
+                    double portion = record.getPortion();
+                    totalProtein += (recipe.getProtein() != null ? recipe.getProtein() : 0) * portion;
+                    totalCarb += (recipe.getCarbohydrate() != null ? recipe.getCarbohydrate() : 0) * portion;
+                    totalFat += (recipe.getFat() != null ? recipe.getFat() : 0) * portion;
+                }
+            }
+            
+            totalCalories = (int) NutritionCalculator.calculateCalories(totalProtein, totalCarb, totalFat);
+            
+            if (totalCaloriesLabel != null) {
+                totalCaloriesLabel.setText(String.format("%d kcal", totalCalories));
+            }
+            if (totalProteinLabel != null) {
+                totalProteinLabel.setText(String.format("%.1f g", totalProtein));
+            }
+            if (totalCarbLabel != null) {
+                totalCarbLabel.setText(String.format("%.1f g", totalCarb));
+            }
+            if (totalFatLabel != null) {
+                totalFatLabel.setText(String.format("%.1f g", totalFat));
+            }
+        }
+    }
+
     @FXML
     private void handleAdd() {
         String recipeName = recipeComboBox.getValue();
@@ -110,6 +163,7 @@ public class MealRecordController {
 
         mealRecordService.saveMealRecord(record);
         loadRecords();
+        updateDailySummary();
         showAlert("记录成功");
     }
 
@@ -119,6 +173,7 @@ public class MealRecordController {
         if (selected != null) {
             mealRecordService.deleteMealRecord(selected.getId());
             loadRecords();
+            updateDailySummary();
             showAlert("删除成功");
         }
     }

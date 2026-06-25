@@ -1,33 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<VBox spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
-    <Label text="身体数据" styleClass="section-title"/>
-    <VBox fx:id="bodyDataCard" spacing="10" styleClass="card">
-        <GridPane hgap="10" vgap="10">
-            <Label text="身高(cm):" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <Spinner fx:id="heightSpinner" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="150"/>
-            
-            <Label text="体重(kg):" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <Spinner fx:id="weightSpinner" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="150"/>
-            
-            <Label text="年龄:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <Spinner fx:id="ageSpinner" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="150"/>
-            
-            <Label text="活动水平:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-            <ComboBox fx:id="activityComboBox" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="150"/>
-        </GridPane>
-        
-        <VBox spacing="5" styleClass="result-section">
-            <Label fx:id="bmiLabel"/>
-            <Label fx:id="bmrLabel"/>
-            <Label fx:id="caloriesLabel"/>
-        </VBox>
-        
-        <HBox spacing="10">
-            <Button fx:id="saveBtn" text="保存" onAction="#handleSave"/>
-            <Button fx:id="editBtn" text="编辑" onAction="#handleEdit"/>
+<VBox spacing="16" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+
+    <!-- 标题 -->
+    <Label text="健康仪表盘" styleClass="section-title"/>
+
+    <!-- 顶部：身体数据卡片（左右两栏） -->
+    <VBox fx:id="bodyDataCard" spacing="16" styleClass="card">
+        <HBox spacing="24">
+            <!-- 左栏：输入区 -->
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <GridPane hgap="12" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="50"/>
+                        <ColumnConstraints percentWidth="50"/>
+                    </columnConstraints>
+                    <!-- 第一行：身高 | 体重 -->
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label text="身高(cm)"/>
+                        <Spinner fx:id="heightSpinner" prefWidth="150" maxWidth="Infinity"/>
+                    </VBox>
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label text="体重(kg)"/>
+                        <Spinner fx:id="weightSpinner" prefWidth="150" maxWidth="Infinity"/>
+                    </VBox>
+                    <!-- 第二行：年龄 | 活动量 -->
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <Label text="年龄"/>
+                        <Spinner fx:id="ageSpinner" prefWidth="150" maxWidth="Infinity"/>
+                    </VBox>
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Label text="活动水平"/>
+                        <ComboBox fx:id="activityComboBox" prefWidth="150" maxWidth="Infinity"/>
+                    </VBox>
+                    <!-- 第三行：保存数据 -->
+                    <HBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2">
+                        <Button fx:id="saveBtn" text="保存数据" styleClass="btn-primary" onAction="#handleSave"/>
+                    </HBox>
+                </GridPane>
+            </VBox>
+            <!-- 右栏：BMI/BMR 显示 -->
+            <VBox spacing="12" alignment="CENTER" minWidth="180">
+                <ProgressIndicator fx:id="bmiIndicator" prefWidth="140" prefHeight="140" progress="0.65"/>
+                <Label fx:id="bmiLabel" styleClass="score-label"/>
+                <Label fx:id="bmiStatusLabel" text="正常范围" styleClass="hint-text"/>
+                <Separator prefWidth="160"/>
+                <Label fx:id="bmrLabel" styleClass="nutrition-value"/>
+                <Label fx:id="caloriesLabel" styleClass="hint-text"/>
+            </VBox>
         </HBox>
     </VBox>
+
+    <!-- 中部：三列仪表盘卡片 -->
+    <GridPane hgap="16" vgap="16">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="33"/>
+            <ColumnConstraints percentWidth="33"/>
+            <ColumnConstraints percentWidth="33"/>
+        </columnConstraints>
+
+        <!-- 第一列：体重趋势 -->
+        <VBox spacing="10" styleClass="card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="体重趋势" styleClass="card-title"/>
+            <HBox spacing="4" alignment="CENTER">
+                <Button text="7天" styleClass="btn-outline"/>
+                <Button text="30天" styleClass="btn-outline"/>
+                <Button text="90天" styleClass="btn-outline"/>
+            </HBox>
+            <LineChart fx:id="weightChart" prefHeight="160" createSymbols="false" legendVisible="false">
+                <xAxis><CategoryAxis animated="false"/></xAxis>
+                <yAxis><NumberAxis fx:id="weightYAxis" animated="false"/></yAxis>
+            </LineChart>
+            <HBox spacing="16" alignment="CENTER">
+                <VBox alignment="CENTER">
+                    <Label fx:id="currentWeightLabel" text="58.5" styleClass="score-label"/>
+                    <Label text="当前体重(kg)" styleClass="hint-text"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label fx:id="weightChangeLabel" text="-0.5" styleClass="score-label"/>
+                    <Label text="变化(kg)" styleClass="hint-text"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- 第二列：今日营养进度 -->
+        <VBox spacing="10" styleClass="card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <Label text="今日营养进度" styleClass="card-title"/>
+            <VBox spacing="8">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="蛋白质" prefWidth="50"/>
+                    <ProgressBar fx:id="proteinProgress" prefWidth="120" progress="0.72"/>
+                    <Label text="72%" styleClass="nutrition-value"/>
+                </HBox>
+                <Label text="达标" styleClass="hint-text"/>
+                <Separator/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="碳水" prefWidth="50"/>
+                    <ProgressBar fx:id="carbProgress" prefWidth="120" progress="0.55"/>
+                    <Label text="55%" styleClass="nutrition-value"/>
+                </HBox>
+                <Label text="未达标" styleClass="hint-text"/>
+                <Separator/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="脂肪" prefWidth="50"/>
+                    <ProgressBar fx:id="fatProgress" prefWidth="120" progress="0.38"/>
+                    <Label text="38%" styleClass="nutrition-value"/>
+                </HBox>
+                <Label text="达标" styleClass="hint-text"/>
+            </VBox>
+        </VBox>
+
+        <!-- 第三列：均衡度评分 -->
+        <VBox spacing="10" styleClass="card" alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <Label text="均衡度评分" styleClass="card-title"/>
+            <ProgressIndicator fx:id="balanceScoreIndicator" prefWidth="140" prefHeight="140" progress="0.85"/>
+            <Label fx:id="balanceScoreLabel" text="85" styleClass="score-label"/>
+            <Label fx:id="balanceGradeLabel" text="优秀" styleClass="goal-label"/>
+            <Button text="查看详细分析" styleClass="btn-outline" onAction="#handleViewAnalysis"/>
+        </VBox>
+    </GridPane>
 </VBox>

@@ -14,8 +14,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory;
 import org.apache.ibatis.mapping.Environment;
@@ -33,8 +31,8 @@ import java.util.Properties;
 public class FoodGPTApplication extends Application {
 
     private SqlSessionFactory sqlSessionFactory;
+    private MainLayoutController mainLayoutController;
     private DashboardController dashboardController;
-    private BodyDataController bodyDataController;
     private WeightTrackController weightTrackController;
     private RecipeManageController recipeManageController;
     private RecipeSearchController recipeSearchController;
@@ -43,51 +41,28 @@ public class FoodGPTApplication extends Application {
     private FemaleZoneController femaleZoneController;
     private AiAdvisorController aiAdvisorController;
 
-
     @Override
     public void start(Stage primaryStage) throws Exception {
         initDatabase();
         initServices();
 
-        TabPane tabPane = new TabPane();
+        // 加载主布局
+        FXMLLoader mainLoader = new FXMLLoader(getClass().getResource("/fxml/mainLayout.fxml"));
+        Parent root = mainLoader.load();
+        mainLayoutController = mainLoader.getController();
 
-        Tab dashboardTab = new Tab("首页");
-        dashboardTab.setContent(loadFxml("dashboard.fxml", dashboardController));
-        tabPane.getTabs().add(dashboardTab);
+        // 设置各页内容
+        mainLayoutController.setDashboardContent(loadFxml("dashboard.fxml", dashboardController));
+        mainLayoutController.setRecipeContent(loadFxml("recipeManage.fxml", recipeManageController));
+        mainLayoutController.setMealContent(loadFxml("mealRecord.fxml", mealRecordController));
+        mainLayoutController.setNutritionContent(loadFxml("nutritionAnalysis.fxml", nutritionAnalysisController));
+        mainLayoutController.setFemaleContent(loadFxml("femaleZone.fxml", femaleZoneController));
+        mainLayoutController.setAiContent(loadFxml("aiAdvisor.fxml", aiAdvisorController));
 
-        Tab bodyDataTab = new Tab("身体数据");
-        bodyDataTab.setContent(loadFxml("bodyData.fxml", bodyDataController));
-        tabPane.getTabs().add(bodyDataTab);
+        // 默认显示首页
+        mainLayoutController.showDashboard();
 
-        Tab weightTrackTab = new Tab("体重追踪");
-        weightTrackTab.setContent(loadFxml("weightTrack.fxml", weightTrackController));
-        tabPane.getTabs().add(weightTrackTab);
-
-        Tab recipeTab = new Tab("菜谱管理");
-        recipeTab.setContent(loadFxml("recipeManage.fxml", recipeManageController));
-        tabPane.getTabs().add(recipeTab);
-
-        Tab recipeSearchTab = new Tab("搜索菜谱");
-        recipeSearchTab.setContent(loadFxml("recipeSearch.fxml", recipeSearchController));
-        tabPane.getTabs().add(recipeSearchTab);
-
-        Tab mealRecordTab = new Tab("用餐记录");
-        mealRecordTab.setContent(loadFxml("mealRecord.fxml", mealRecordController));
-        tabPane.getTabs().add(mealRecordTab);
-
-        Tab nutritionTab = new Tab("营养分析");
-        nutritionTab.setContent(loadFxml("nutritionAnalysis.fxml", nutritionAnalysisController));
-        tabPane.getTabs().add(nutritionTab);
-
-        Tab femaleZoneTab = new Tab("女性专区");
-        femaleZoneTab.setContent(loadFxml("femaleZone.fxml", femaleZoneController));
-        tabPane.getTabs().add(femaleZoneTab);
-
-        Tab aiAdvisorTab = new Tab("AI顾问");
-        aiAdvisorTab.setContent(loadFxml("aiAdvisor.fxml", aiAdvisorController));
-        tabPane.getTabs().add(aiAdvisorTab);
-
-        Scene scene = new Scene(tabPane, 1000, 700);
+        Scene scene = new Scene(root, 1100, 750);
         scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
 
         primaryStage.setTitle("食物语 - 智能饮食顾问");
@@ -178,9 +153,6 @@ public class FoodGPTApplication extends Application {
         dashboardController = new DashboardController();
         dashboardController.setServices(bodyDataService, nutritionService);
 
-        bodyDataController = new BodyDataController();
-        bodyDataController.setService(bodyDataService);
-
         weightTrackController = new WeightTrackController();
         weightTrackController.setService(weightTrackService);
 
@@ -189,15 +161,19 @@ public class FoodGPTApplication extends Application {
 
         recipeSearchController = new RecipeSearchController();
         recipeSearchController.setService(recipeService);
+        ExternalRecipeService externalRecipeService = new ExternalRecipeServiceImpl(appConfig.getApi().getRecipeSearch());
+        recipeSearchController.setExternalRecipeService(externalRecipeService);
 
         mealRecordController = new MealRecordController();
         mealRecordController.setServices(mealRecordService, recipeService);
 
         nutritionAnalysisController = new NutritionAnalysisController();
         nutritionAnalysisController.setServices(mealRecordService, recipeService);
+        nutritionAnalysisController.setBodyDataService(bodyDataService);
 
         femaleZoneController = new FemaleZoneController();
         femaleZoneController.setService(cycleService);
+        femaleZoneController.setServices(bodyDataService, recipeService, mealRecordService, nutritionService);
 
         aiAdvisorController = new AiAdvisorController();
         aiAdvisorController.setService(aiAdvisorService);
