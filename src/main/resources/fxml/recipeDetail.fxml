@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="12" style="-fx-background-color: #FDF5E6; -fx-padding: 20;"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+
+    <!-- 标题栏 -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label fx:id="recipeNameLabel" text="菜谱名称"
+               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #4A2C1A;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="closeBtn" text="关闭"
+                style="-fx-background-color: transparent; -fx-text-fill: #8B5A2B; -fx-font-size: 14px;"
+                onAction="#handleClose"/>
+    </HBox>
+
+    <!-- 分类和热量 -->
+    <HBox spacing="20" style="-fx-padding: 0 0 10px 0;">
+        <Label fx:id="categoryLabel" text="分类: -"
+               style="-fx-font-size: 14px; -fx-text-fill: #8B5A2B;"/>
+        <Label fx:id="caloriesLabel" text="热量: - kcal"
+               style="-fx-font-size: 14px; -fx-text-fill: #E8B86D; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- 食材清单 -->
+    <VBox spacing="6" style="-fx-padding: 5px 0;">
+        <Label text="食材清单"
+               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4A2C1A;"/>
+        <ScrollPane fitToWidth="true" maxHeight="180" style="-fx-background-color: transparent;">
+            <VBox fx:id="ingredientsContainer" spacing="2"
+                  style="-fx-background-color: #FFFFFF; -fx-background-radius: 8px; -fx-padding: 10px;"/>
+        </ScrollPane>
+    </VBox>
+
+    <Separator/>
+
+    <!-- 烹饪步骤 -->
+    <VBox spacing="6" style="-fx-padding: 5px 0;" VBox.vgrow="ALWAYS">
+        <Label text="烹饪步骤"
+               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4A2C1A;"/>
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+            <VBox fx:id="stepsContainer" spacing="3"
+                  style="-fx-background-color: #FFFFFF; -fx-background-radius: 8px; -fx-padding: 10px;"/>
+        </ScrollPane>
+    </VBox>
+
+    <Separator/>
+
+    <!-- 营养素信息 -->
+    <VBox spacing="6" style="-fx-padding: 5px 0;">
+        <Label text="营养素信息"
+               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4A2C1A;"/>
+        <HBox spacing="30" style="-fx-background-color: #FFFFFF; -fx-background-radius: 8px; -fx-padding: 12px 16px;">
+            <Label fx:id="proteinLabel" text="蛋白质: -"
+                   style="-fx-font-size: 14px; -fx-text-fill: #4A2C1A;"/>
+            <Label fx:id="carbLabel" text="碳水: -"
+                   style="-fx-font-size: 14px; -fx-text-fill: #4A2C1A;"/>
+            <Label fx:id="fatLabel" text="脂肪: -"
+                   style="-fx-font-size: 14px; -fx-text-fill: #4A2C1A;"/>
+        </HBox>
+    </VBox>
+
+    <Separator/>
+
+    <!-- 底部按钮 -->
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+        <Button fx:id="saveBtn" text="保存到本地菜谱"
+                style="-fx-background-color: #8B5A2B; -fx-text-fill: #FFFFFF; -fx-background-radius: 16px; -fx-padding: 8px 20px; -fx-font-size: 14px;"
+                onAction="#handleSave"/>
+    </HBox>
+</VBox>

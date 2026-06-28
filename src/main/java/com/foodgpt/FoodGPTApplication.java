@@ -47,20 +47,29 @@ public class FoodGPTApplication extends Application {
         initServices();
 
         // 加载主布局
+        mainLayoutController = new MainLayoutController();
         FXMLLoader mainLoader = new FXMLLoader(getClass().getResource("/fxml/mainLayout.fxml"));
+        mainLoader.setController(mainLayoutController);
         Parent root = mainLoader.load();
-        mainLayoutController = mainLoader.getController();
 
         // 设置导航引用
         dashboardController.setMainLayoutController(mainLayoutController);
         femaleZoneController.setMainLayoutController(mainLayoutController);
+        recipeManageController.setMainLayoutController(mainLayoutController);
+        recipeSearchController.setMainLayoutController(mainLayoutController);
 
         // 设置各页内容
         mainLayoutController.setDashboardContent(loadFxml("dashboard.fxml", dashboardController));
+        mainLayoutController.setDashboardController(dashboardController);
         mainLayoutController.setRecipeContent(loadFxml("recipeManage.fxml", recipeManageController));
+        mainLayoutController.setRecipeManageController(recipeManageController);
+        mainLayoutController.setRecipeSearchContent(loadFxml("recipeSearch.fxml", recipeSearchController));
         mainLayoutController.setMealContent(loadFxml("mealRecord.fxml", mealRecordController));
+        mainLayoutController.setMealRecordController(mealRecordController);
         mainLayoutController.setNutritionContent(loadFxml("nutritionAnalysis.fxml", nutritionAnalysisController));
+        mainLayoutController.setNutritionAnalysisController(nutritionAnalysisController);
         mainLayoutController.setFemaleContent(loadFxml("femaleZone.fxml", femaleZoneController));
+        mainLayoutController.setFemaleZoneController(femaleZoneController);
         mainLayoutController.setAiContent(loadFxml("aiAdvisor.fxml", aiAdvisorController));
 
         // 默认显示首页
@@ -169,11 +178,12 @@ public class FoodGPTApplication extends Application {
 
         recipeSearchController = new RecipeSearchController();
         recipeSearchController.setService(recipeService);
-        ExternalRecipeService externalRecipeService = new ExternalRecipeServiceImpl(appConfig.getApi().getRecipeSearch());
+        ExternalRecipeService externalRecipeService = new ExternalRecipeServiceImpl(appConfig);
         recipeSearchController.setExternalRecipeService(externalRecipeService);
 
         mealRecordController = new MealRecordController();
         mealRecordController.setServices(mealRecordService, recipeService);
+        mealRecordController.setMainLayoutController(mainLayoutController);
 
         nutritionAnalysisController = new NutritionAnalysisController();
         nutritionAnalysisController.setServices(mealRecordService, recipeService);

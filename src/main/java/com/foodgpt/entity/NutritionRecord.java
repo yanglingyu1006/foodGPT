@@ -21,4 +21,5 @@ public class NutritionRecord {
     private Double fat;
     private Integer calories;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

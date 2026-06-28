@@ -30,7 +30,8 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public void saveRecipe(Recipe recipe) {
-        recipeMapper.insert(recipe);
+        int rows = recipeMapper.insert(recipe);
+        System.out.println("[RecipeService] saveRecipe 插入结果: rows=" + rows + ", recipe.id=" + recipe.getId() + ", name=" + recipe.getName());
     }
 
     @Override

@@ -17,4 +17,5 @@ public class WeightRecord {
     private Double weight;
     private LocalDate recordDate;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

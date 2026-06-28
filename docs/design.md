@@ -117,6 +117,7 @@ foodGPT/                              # 项目根目录
 │       │       │   ├── WeightTrackController.java
 │       │       │   ├── RecipeManageController.java
 │       │       │   ├── RecipeSearchController.java
+│       │       │   ├── RecipeDetailController.java
 │       │       │   ├── MealRecordController.java
 │       │       │   ├── NutritionAnalysisController.java
 │       │       │   ├── FemaleZoneController.java
@@ -183,6 +184,7 @@ foodGPT/                              # 项目根目录
 │           │   ├── weightTrack.fxml
 │           │   ├── recipeManage.fxml
 │           │   ├── recipeSearch.fxml
+│           │   ├── recipeDetail.fxml
 │           │   ├── mealRecord.fxml
 │           │   ├── nutritionAnalysis.fxml
 │           │   ├── femaleZone.fxml
@@ -285,6 +287,7 @@ foodGPT/                              # 项目根目录
 | weight | REAL | NOT NULL | 体重（kg） |
 | record_date | DATE | NOT NULL UNIQUE | 记录日期（YYYY-MM-DD） |
 | create_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| update_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 更新时间 |
 
 #### 2.2.3 recipe（菜谱表）
 
@@ -303,6 +306,7 @@ foodGPT/                              # 项目根目录
 | description | TEXT | NULL | 菜谱简介 |
 | source | VARCHAR(100) | NULL | 来源（如联网搜索） |
 | create_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| update_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 更新时间 |
 
 **JSON字段处理说明**：
 
@@ -340,12 +344,12 @@ private List<String> steps;
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 主键ID |
 | user_id | INTEGER | NOT NULL DEFAULT 1 | 用户ID |
 | record_date | DATE | NOT NULL | 记录日期（YYYY-MM-DD） |
-| meal_type | VARCHAR(20) | NOT NULL | 餐次 |
-| protein | REAL | NOT NULL | 蛋白质摄入（g） |
-| carbohydrate | REAL | NOT NULL | 碳水摄入（g） |
-| fat | REAL | NOT NULL | 脂肪摄入（g） |
-| calories | INTEGER | NOT NULL | 热量摄入（kcal） |
+| protein | REAL | DEFAULT 0 | 蛋白质摄入（g） |
+| carbohydrate | REAL | DEFAULT 0 | 碳水摄入（g） |
+| fat | REAL | DEFAULT 0 | 脂肪摄入（g） |
+| calories | INTEGER | DEFAULT 0 | 热量摄入（kcal） |
 | create_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| update_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 更新时间 |
 
 #### 2.2.6 cycle_record（生理周期记录表）
 
@@ -366,9 +370,10 @@ private List<String> steps;
 |--------|------|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 主键ID |
 | user_id | INTEGER | NOT NULL DEFAULT 1 | 用户ID |
-| preference_type | VARCHAR(20) | NOT NULL | 偏好类型：LIKE/DISLIKE/DIETARY |
-| content | VARCHAR(100) | NOT NULL | 偏好内容（如：香菜、低脂、素食） |
+| preference_type | VARCHAR(20) | NOT NULL | 偏好类型：favorite/avoided |
+| content | TEXT | NOT NULL | 偏好内容（逗号分隔，如：鸡肉,鸡蛋,西红柿） |
 | create_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| update_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 更新时间 |
 
 #### 2.2.8 health_goal（健康目标表）
 
@@ -376,10 +381,11 @@ private List<String> steps;
 |--------|------|------|------|
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 主键ID |
 | user_id | INTEGER | NOT NULL DEFAULT 1 | 用户ID |
-| goal_type | VARCHAR(20) | NOT NULL | 目标类型：LOSS_GAIN/MUSCLE_GAIN/MAINTAIN |
+| goal_type | VARCHAR(20) | NOT NULL | 目标类型：WEIGHT_LOSS/MUSCLE_GAIN/MAINTAIN |
 | target_weight | REAL | NULL | 目标体重（kg） |
-| target_calories_min | INTEGER | NULL | 目标热量最小值 |
-| target_calories_max | INTEGER | NULL | 目标热量最大值 |
+| target_date | DATE | NULL | 目标达成日期 |
+| current_progress | REAL | DEFAULT 0 | 当前进度 |
+| is_active | BOOLEAN | NOT NULL DEFAULT true | 是否激活 |
 | create_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
 | update_time | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 更新时间 |
 

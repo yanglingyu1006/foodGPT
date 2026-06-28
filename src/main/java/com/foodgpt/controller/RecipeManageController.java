@@ -7,11 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.TilePane;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 public class RecipeManageController {
@@ -25,7 +21,7 @@ public class RecipeManageController {
     @FXML
     private Button searchBtn;
     @FXML
-    private TilePane recipeTilePane;
+    private javafx.scene.layout.TilePane recipeTilePane;
     @FXML
     private Label pageLabel;
     @FXML
@@ -35,11 +31,24 @@ public class RecipeManageController {
 
     private static final int PAGE_SIZE = 10;
     private RecipeService recipeService;
+    private MainLayoutController mainLayoutController;
     private List<Recipe> allRecipes;
     private int currentPage = 0;
 
     public void setService(RecipeService recipeService) {
         this.recipeService = recipeService;
+    }
+
+    public void setMainLayoutController(MainLayoutController mainLayoutController) {
+        this.mainLayoutController = mainLayoutController;
+    }
+
+    /**
+     * 刷新页面数据（从其他页面切换回来时调用）
+     */
+    public void refresh() {
+        System.out.println("[RecipeManage] refresh() 被调用，重新加载菜谱列表...");
+        loadRecipes();
     }
 
     @FXML
@@ -54,6 +63,7 @@ public class RecipeManageController {
     private void loadRecipes() {
         if (recipeService != null) {
             allRecipes = recipeService.getAllRecipes();
+            System.out.println("[RecipeManage] loadRecipes() 从DB加载到 " + allRecipes.size() + " 条菜谱");
             currentPage = 0;
             showPage();
         }
@@ -137,32 +147,11 @@ public class RecipeManageController {
             showAlert("请先选择一份菜谱");
             return;
         }
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("菜谱详情");
-        alert.setHeaderText(selected.getName());
-
-        String category = RecipeCategory.valueOf(selected.getCategory()).getLabel();
-        String content = String.format(
-                "分类: %s\n热量: %d kcal\n\n营养素:\n  蛋白质: %.1f g\n  碳水化合物: %.1f g\n  脂肪: %.1f g\n\n食材清单:\n%s\n\n烹饪步骤:\n%s",
-                category,
-                selected.getCalories() != null ? selected.getCalories() : 0,
-                selected.getProtein() != null ? selected.getProtein() : 0,
-                selected.getCarbohydrate() != null ? selected.getCarbohydrate() : 0,
-                selected.getFat() != null ? selected.getFat() : 0,
-                selected.getIngredients() != null ? selected.getIngredients() : "暂无",
-                selected.getSteps() != null ? selected.getSteps() : "暂无"
-        );
-
-        TextArea textArea = new TextArea(content);
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setMaxWidth(500);
-        textArea.setPrefRowCount(15);
-
-        alert.getDialogPane().setContent(textArea);
-        alert.getDialogPane().setMinWidth(550);
-        alert.showAndWait();
+        RecipeDetailController detailController = RecipeDetailController.show(selected, recipeService);
+        if (detailController != null && detailController.isSaved()) {
+            System.out.println("[RecipeManage] 详情中保存了菜谱，刷新列表");
+            loadRecipes();
+        }
     }
 
     @FXML
@@ -171,7 +160,19 @@ public class RecipeManageController {
         if (selected != null) {
             recipeService.deleteRecipe(selected.getId());
             loadRecipes();
+            System.out.println("[RecipeManage] 菜谱已删除，刷新关联页面");
+            if (mainLayoutController != null) {
+                mainLayoutController.refreshMealRecord();
+                mainLayoutController.refreshDashboard();
+            }
             showAlert("删除成功");
+        }
+    }
+
+    @FXML
+    private void handleOnlineSearch() {
+        if (mainLayoutController != null) {
+            mainLayoutController.showRecipeSearch();
         }
     }
 

@@ -80,6 +80,14 @@ public class DashboardController {
         this.mainLayoutController = mainLayoutController;
     }
 
+    /**
+     * 刷新仪表盘数据（从其他页面切换回来时调用）
+     */
+    public void refresh() {
+        System.out.println("[Dashboard] 刷新仪表盘数据...");
+        loadData();
+    }
+
     @FXML
     private void initialize() {
         if (heightSpinner != null) {
@@ -99,19 +107,21 @@ public class DashboardController {
     }
 
     private void loadData() {
+        System.out.println("[Dashboard] loadData() 开始，从数据库重新加载...");
         // 加载身体数据
         if (bodyDataService != null) {
             currentBodyData = bodyDataService.getLatestBodyData();
+            System.out.println("[Dashboard] loadData() 查询到 BodyData: " + (currentBodyData != null ? "id=" + currentBodyData.getId() + ", weight=" + currentBodyData.getWeight() + ", bmi=" + currentBodyData.getBmi() + ", updateTime=" + currentBodyData.getUpdateTime() : "null"));
             if (currentBodyData != null && heightSpinner != null && weightSpinner != null
                     && ageSpinner != null && activityComboBox != null) {
                 heightSpinner.getValueFactory().setValue(currentBodyData.getHeight());
                 weightSpinner.getValueFactory().setValue(currentBodyData.getWeight());
                 ageSpinner.getValueFactory().setValue(currentBodyData.getAge());
                 activityComboBox.setValue(ActivityLevel.valueOf(currentBodyData.getActivityLevel()).getLabel());
-                updateCalculations();
             } else {
                 showEmptyState();
             }
+            updateCalculations();
         }
 
         // 加载体重趋势图
@@ -136,25 +146,56 @@ public class DashboardController {
         series.setName("体重变化");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+        double minWeight = Double.MAX_VALUE;
+        double maxWeight = Double.MIN_VALUE;
+
         for (WeightRecord record : records) {
-            series.getData().add(new XYChart.Data<>(record.getRecordDate().format(formatter), record.getWeight()));
+            double w = record.getWeight();
+            series.getData().add(new XYChart.Data<>(record.getRecordDate().format(formatter), w));
+            if (w < minWeight) minWeight = w;
+            if (w > maxWeight) maxWeight = w;
         }
 
         weightChart.getData().clear();
         weightChart.getData().add(series);
 
+        // 动态设置 Y 轴范围，使体重变化更明显
+        if (!records.isEmpty() && weightYAxis != null) {
+            double range = maxWeight - minWeight;
+            if (range < 1.0) {
+                // 变化小于 1kg，扩展范围使变化可见
+                range = 2.0;
+            }
+            double padding = range * 0.3;
+            weightYAxis.setAutoRanging(false);
+            weightYAxis.setLowerBound(Math.floor(minWeight - padding));
+            weightYAxis.setUpperBound(Math.ceil(maxWeight + padding));
+            weightYAxis.setTickUnit(Math.max(0.5, Math.round(range / 5.0 * 10.0) / 10.0));
+        } else if (weightYAxis != null) {
+            weightYAxis.setAutoRanging(true);
+        }
+
         // 更新当前体重和变化
         if (!records.isEmpty()) {
             WeightRecord latest = records.get(records.size() - 1);
             if (currentWeightLabel != null) {
-                currentWeightLabel.setText(String.format("%.1f", latest.getWeight()));
+                currentWeightLabel.setText(String.format("%.1f kg", latest.getWeight()));
             }
             if (records.size() >= 2) {
                 WeightRecord first = records.get(0);
                 double change = latest.getWeight() - first.getWeight();
                 if (weightChangeLabel != null) {
-                    weightChangeLabel.setText(String.format("%+.1f", change));
+                    weightChangeLabel.setText(String.format("%+.1f kg", change));
                 }
+            } else if (weightChangeLabel != null) {
+                weightChangeLabel.setText("0.0 kg");
+            }
+        } else {
+            if (currentWeightLabel != null) {
+                currentWeightLabel.setText("-- kg");
+            }
+            if (weightChangeLabel != null) {
+                weightChangeLabel.setText("-- kg");
             }
         }
     }
@@ -275,11 +316,33 @@ public class DashboardController {
             bodyData.setId(currentBodyData.getId());
             bodyData.setCreateTime(currentBodyData.getCreateTime());
             bodyDataService.updateBodyData(bodyData);
+            System.out.println("[Dashboard] 更新 BodyData, id=" + bodyData.getId() + ", weight=" + bodyData.getWeight());
         } else {
             bodyData.setCreateTime(LocalDateTime.now());
             bodyDataService.saveBodyData(bodyData);
-            currentBodyData = bodyData;
+            System.out.println("[Dashboard] 新增 BodyData, weight=" + bodyData.getWeight());
         }
+
+        // 强制从数据库重新加载，确保获取到最新数据
+        currentBodyData = bodyDataService.getLatestBodyData();
+        System.out.println("[Dashboard] 从DB重载 BodyData: " + (currentBodyData != null ? "weight=" + currentBodyData.getWeight() + ", bmi=" + currentBodyData.getBmi() : "null"));
+
+        // 同步保存体重记录到体重追踪表，确保体重趋势图有数据
+        if (weightTrackService != null) {
+            WeightRecord weightRecord = new WeightRecord();
+            weightRecord.setUserId(1);
+            weightRecord.setWeight(weightSpinner.getValue());
+            weightRecord.setRecordDate(LocalDate.now());
+            weightRecord.setCreateTime(LocalDateTime.now());
+            weightRecord.setUpdateTime(LocalDateTime.now());
+            weightTrackService.saveWeightRecord(weightRecord);
+            System.out.println("[Dashboard] 体重数据已同步到体重追踪表，当前体重: " + weightSpinner.getValue() + " kg");
+        }
+
+        // 直接刷新 UI 各模块，避免 loadData() 中冗余的 spinner 重置
+        updateCalculations();
+        loadWeightChart();
+        loadNutritionProgress();
 
         showAlert("保存成功");
     }

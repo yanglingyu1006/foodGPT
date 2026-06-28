@@ -24,6 +24,7 @@ public class CycleServiceImpl implements CycleService {
         wrapper.eq("user_id", 1);
         wrapper.isNull("end_date");
         wrapper.orderByDesc("start_date");
+        wrapper.last("LIMIT 1"); 
         return cycleRecordMapper.selectOne(wrapper);
     }
 

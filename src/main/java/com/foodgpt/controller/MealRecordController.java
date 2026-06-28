@@ -40,10 +40,24 @@ public class MealRecordController {
 
     private MealRecordService mealRecordService;
     private RecipeService recipeService;
+    private MainLayoutController mainLayoutController;
 
     public void setServices(MealRecordService mealRecordService, RecipeService recipeService) {
         this.mealRecordService = mealRecordService;
         this.recipeService = recipeService;
+    }
+
+    public void setMainLayoutController(MainLayoutController mainLayoutController) {
+        this.mainLayoutController = mainLayoutController;
+    }
+
+    /**
+     * 刷新页面数据（从其他页面切换回来时调用）
+     */
+    public void refresh() {
+        loadRecipes();
+        loadRecords();
+        updateDailySummary();
     }
 
     @FXML
@@ -164,6 +178,10 @@ public class MealRecordController {
         mealRecordService.saveMealRecord(record);
         loadRecords();
         updateDailySummary();
+        System.out.println("[MealRecord] 用餐记录已添加，刷新首页营养进度");
+        if (mainLayoutController != null) {
+            mainLayoutController.refreshDashboard();
+        }
         showAlert("记录成功");
     }
 
@@ -174,6 +192,10 @@ public class MealRecordController {
             mealRecordService.deleteMealRecord(selected.getId());
             loadRecords();
             updateDailySummary();
+            System.out.println("[MealRecord] 用餐记录已删除，刷新首页营养进度");
+            if (mainLayoutController != null) {
+                mainLayoutController.refreshDashboard();
+            }
             showAlert("删除成功");
         }
     }

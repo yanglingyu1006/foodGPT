@@ -54,19 +54,19 @@
             <Separator orientation="VERTICAL" prefHeight="40"/>
             <VBox spacing="4" alignment="CENTER">
                 <Label text="经期" styleClass="hint-text"/>
-                <ProgressIndicator prefWidth="40" prefHeight="40" progress="1"/>
+                <ProgressIndicator fx:id="menstruationIndicator" prefWidth="40" prefHeight="40" progress="0"/>
             </VBox>
             <VBox spacing="4" alignment="CENTER">
                 <Label text="卵泡期" styleClass="hint-text"/>
-                <ProgressIndicator prefWidth="40" prefHeight="40" progress="0.3"/>
+                <ProgressIndicator fx:id="follicularIndicator" prefWidth="40" prefHeight="40" progress="0"/>
             </VBox>
             <VBox spacing="4" alignment="CENTER">
                 <Label text="排卵期" styleClass="hint-text"/>
-                <ProgressIndicator prefWidth="40" prefHeight="40" progress="0.3"/>
+                <ProgressIndicator fx:id="ovulationIndicator" prefWidth="40" prefHeight="40" progress="0"/>
             </VBox>
             <VBox spacing="4" alignment="CENTER">
                 <Label text="黄体期" styleClass="hint-text"/>
-                <ProgressIndicator prefWidth="40" prefHeight="40" progress="0.3"/>
+                <ProgressIndicator fx:id="lutealIndicator" prefWidth="40" prefHeight="40" progress="0"/>
             </VBox>
         </HBox>
     </VBox>

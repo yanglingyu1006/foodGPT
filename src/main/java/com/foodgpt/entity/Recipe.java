@@ -29,4 +29,5 @@ public class Recipe {
     private String description;
     private String source;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

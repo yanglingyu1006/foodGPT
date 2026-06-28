@@ -16,4 +16,5 @@ public class UserPreference {
     private String preferenceType;
     private String content;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

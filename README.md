@@ -92,6 +92,7 @@ foodGPT/
 │   │   │   ├── WeightTrackController.java # 体重追踪
 │   │   │   ├── RecipeManageController.java# 菜谱管理
 │   │   │   ├── RecipeSearchController.java# 菜谱搜索
+│   │   │   ├── RecipeDetailController.java # 菜谱详情
 │   │   │   ├── MealRecordController.java  # 用餐记录
 │   │   │   ├── NutritionAnalysisController.java # 营养分析
 │   │   │   ├── FemaleZoneController.java  # 女性专区
@@ -129,8 +130,10 @@ foodGPT/
 │   │   │   └── UserPreferenceMapper.java
 │   │   ├── entity/                        # 实体类
 │   │   │   ├── BodyData.java
+│   │   │   ├── WeightRecord.java
 │   │   │   ├── Recipe.java
 │   │   │   ├── MealRecord.java
+│   │   │   ├── NutritionRecord.java
 │   │   │   ├── CycleRecord.java
 │   │   │   ├── UserPreference.java
 │   │   │   └── HealthGoal.java
@@ -156,6 +159,7 @@ foodGPT/
 │       │   ├── weightTrack.fxml
 │       │   ├── recipeManage.fxml
 │       │   ├── recipeSearch.fxml
+│       │   ├── recipeDetail.fxml
 │       │   ├── mealRecord.fxml
 │       │   ├── nutritionAnalysis.fxml
 │       │   ├── femaleZone.fxml
@@ -189,13 +193,13 @@ foodGPT/
 | 表名 | 说明 | 核心字段 |
 |------|------|----------|
 | `body_data` | 身体数据 | height, weight, age, activity_level, bmi, bmr |
-| `weight_record` | 体重记录 | weight, record_date |
-| `recipe` | 菜谱库 | name, category, ingredients(JSON), protein, carbohydrate, fat, calories |
-| `meal_record` | 用餐记录 | recipe_id, meal_type, portion, record_date |
-| `nutrition_record` | 营养素记录 | record_date, meal_type, protein, carbohydrate, fat, calories |
-| `cycle_record` | 生理周期 | start_date, cycle_length, phase |
-| `user_preference` | 用户偏好 | preference_type, content |
-| `health_goal` | 健康目标 | goal_type, target_weight, target_calories |
+| `weight_record` | 体重记录 | weight, record_date, update_time |
+| `recipe` | 菜谱库 | name, category, ingredients(JSON), protein, carbohydrate, fat, calories, update_time |
+| `meal_record` | 用餐记录 | recipe_id, meal_type, portion, record_date, update_time |
+| `nutrition_record` | 营养素记录 | record_date, protein, carbohydrate, fat, calories, update_time |
+| `cycle_record` | 生理周期 | start_date, cycle_length, phase, update_time |
+| `user_preference` | 用户偏好 | preference_type, content, update_time |
+| `health_goal` | 健康目标 | goal_type, target_weight, target_date, current_progress, is_active |
 
 ---
 

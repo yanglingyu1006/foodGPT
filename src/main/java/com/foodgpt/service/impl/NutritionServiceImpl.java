@@ -33,7 +33,8 @@ public class NutritionServiceImpl implements NutritionService {
         QueryWrapper<NutritionRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", 1);
         wrapper.eq("record_date", date);
-        return nutritionRecordMapper.selectOne(wrapper);
+        List<NutritionRecord> records = nutritionRecordMapper.selectList(wrapper);
+        return records.isEmpty() ? null : records.get(0);
     }
 
     @Override

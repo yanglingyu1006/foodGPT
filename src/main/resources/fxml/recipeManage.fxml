@@ -11,27 +11,24 @@
         <ComboBox fx:id="categoryComboBox" prefWidth="120"/>
         <Button fx:id="searchBtn" text="搜索" styleClass="btn-primary" onAction="#handleSearch"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <Button text="联网搜索" styleClass="btn-outline" onAction="#handleOnlineSearch"/>
         <Button text="+ 新建菜谱" styleClass="btn-primary"/>
     </HBox>
 
-    <!-- 菜谱卡片网格 -->
-    <ScrollPane fitToWidth="true" styleClass="card" VBox.vgrow="ALWAYS">
-        <TilePane fx:id="recipeTilePane" hgap="12" vgap="12" prefColumns="3"/>
-    </ScrollPane>
-
     <!-- 菜谱列表 -->
-    <VBox spacing="10" styleClass="card">
+    <VBox spacing="10" styleClass="card" VBox.vgrow="ALWAYS">
         <Label text="全部菜谱" styleClass="card-title"/>
-        <ListView fx:id="recipeListView" prefHeight="200"/>
+        <ListView fx:id="recipeListView" prefHeight="200" VBox.vgrow="ALWAYS"/>
         <HBox spacing="10">
+            <Button text="查看详情" styleClass="btn-outline" onAction="#handleViewDetail"/>
             <Button text="删除选中" styleClass="btn-danger" onAction="#handleDelete"/>
         </HBox>
     </VBox>
 
     <!-- 分页控件 -->
     <HBox spacing="8" alignment="CENTER">
-        <Button text="上一页" styleClass="btn-outline"/>
-        <Label fx:id="pageLabel" text="第 1/3 页" styleClass="hint-text"/>
-        <Button text="下一页" styleClass="btn-outline"/>
+        <Button fx:id="prevPageBtn" text="上一页" styleClass="btn-outline" onAction="#handlePrevPage"/>
+        <Label fx:id="pageLabel" text="第 1/1 页" styleClass="hint-text"/>
+        <Button fx:id="nextPageBtn" text="下一页" styleClass="btn-outline" onAction="#handleNextPage"/>
     </HBox>
 </VBox>

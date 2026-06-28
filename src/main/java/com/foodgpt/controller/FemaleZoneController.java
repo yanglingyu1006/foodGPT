@@ -37,6 +37,14 @@ public class FemaleZoneController {
     private Label currentGoalLabel;
     @FXML
     private Button saveGoalBtn;
+    @FXML
+    private ProgressIndicator menstruationIndicator;
+    @FXML
+    private ProgressIndicator follicularIndicator;
+    @FXML
+    private ProgressIndicator ovulationIndicator;
+    @FXML
+    private ProgressIndicator lutealIndicator;
 
     private CycleService cycleService;
     private BodyDataService bodyDataService;
@@ -72,6 +80,13 @@ public class FemaleZoneController {
         this.mainLayoutController = mainLayoutController;
     }
 
+    /**
+     * 刷新页面数据（从其他页面切换回来时调用）
+     */
+    public void refresh() {
+        loadData();
+    }
+
     @FXML
     private void initialize() {
         if (cycleLengthSpinner != null) {
@@ -94,65 +109,156 @@ public class FemaleZoneController {
     }
 
     private void loadData() {
+        System.out.println("[FemaleZone] loadData() 开始...");
         if (cycleService != null) {
             String phase = cycleService.getCurrentPhase();
+            System.out.println("[FemaleZone] 当前阶段: " + phase);
+            CyclePhase cyclePhase = CyclePhase.valueOf(phase);
             if (cyclePhaseLabel != null) {
-                cyclePhaseLabel.setText("当前阶段: " + CyclePhase.valueOf(phase).getLabel());
+                cyclePhaseLabel.setText("当前阶段: " + cyclePhase.getLabel());
             }
+
+            // 更新四个阶段指示器
+            updatePhaseIndicators(cyclePhase);
 
             CycleRecord current = cycleService.getCurrentCycle();
             if (current != null) {
+                System.out.println("[FemaleZone] 周期记录: id=" + current.getId() + ", startDate=" + current.getStartDate() + ", cycleLength=" + current.getCycleLength());
                 if (startDatePicker != null) {
                     startDatePicker.setValue(current.getStartDate());
                 }
                 if (cycleLengthSpinner != null) {
                     cycleLengthSpinner.getValueFactory().setValue(current.getCycleLength());
                 }
+            } else {
+                System.out.println("[FemaleZone] 没有周期记录");
             }
+        } else {
+            System.out.println("[FemaleZone] cycleService 为 null！");
         }
 
         loadCurrentGoal();
     }
 
+    private void updatePhaseIndicators(CyclePhase phase) {
+        if (menstruationIndicator == null || follicularIndicator == null
+                || ovulationIndicator == null || lutealIndicator == null) {
+            return;
+        }
+        // 将所有指示器重置为 0，当前阶段的设置为 1
+        menstruationIndicator.setProgress(0);
+        follicularIndicator.setProgress(0);
+        ovulationIndicator.setProgress(0);
+        lutealIndicator.setProgress(0);
+
+        switch (phase) {
+            case MENSTRUATION:
+                menstruationIndicator.setProgress(1);
+                break;
+            case FOLLICULAR:
+                follicularIndicator.setProgress(1);
+                break;
+            case OVULATION:
+                ovulationIndicator.setProgress(1);
+                break;
+            case LUTEAL:
+                lutealIndicator.setProgress(1);
+                break;
+        }
+        System.out.println("[FemaleZone] 阶段指示器已更新为: " + phase.getLabel());
+    }
+
     private void loadCurrentGoal() {
+        System.out.println("[FemaleZone] loadCurrentGoal() 开始...");
         if (healthGoalService != null) {
             currentGoal = healthGoalService.getCurrentGoal();
+            System.out.println("[FemaleZone] 从DB加载目标: " + (currentGoal != null ? currentGoal.getGoalType() : "null"));
+        } else {
+            System.out.println("[FemaleZone] healthGoalService 为 null！");
         }
+
         if (currentGoalLabel != null) {
             if (currentGoal != null) {
-                currentGoalLabel.setText("当前目标: " + HealthGoalType.valueOf(currentGoal.getGoalType()).getLabel());
+                String label = HealthGoalType.valueOf(currentGoal.getGoalType()).getLabel();
+                currentGoalLabel.setText("当前目标: " + label);
+                System.out.println("[FemaleZone] 更新标签: " + label);
             } else {
                 currentGoalLabel.setText("当前目标: 未设置");
+                System.out.println("[FemaleZone] 更新标签: 未设置");
             }
+        }
+
+        // 同步 radio button 选中状态
+        updateGoalRadioButtons();
+    }
+
+    private void updateGoalRadioButtons() {
+        if (currentGoal == null || weightLossRadio == null || muscleGainRadio == null || maintainRadio == null) {
+            return;
+        }
+        try {
+            HealthGoalType goalType = HealthGoalType.valueOf(currentGoal.getGoalType());
+            switch (goalType) {
+                case WEIGHT_LOSS:
+                    weightLossRadio.setSelected(true);
+                    break;
+                case MUSCLE_GAIN:
+                    muscleGainRadio.setSelected(true);
+                    break;
+                case MAINTAIN:
+                    maintainRadio.setSelected(true);
+                    break;
+            }
+            System.out.println("[FemaleZone] radio button 同步到: " + goalType.getLabel());
+        } catch (IllegalArgumentException e) {
+            System.err.println("[FemaleZone] 未知的目标类型: " + currentGoal.getGoalType());
         }
     }
 
     @FXML
     private void handleSaveCycle() {
+        System.out.println("[FemaleZone] handleSaveCycle() 被调用");
         if (startDatePicker == null || cycleLengthSpinner == null) {
+            System.out.println("[FemaleZone] startDatePicker 或 cycleLengthSpinner 为 null！");
             return;
         }
 
-        CycleRecord record = new CycleRecord();
-        record.setUserId(1);
+        CycleRecord record = cycleService != null ? cycleService.getCurrentCycle() : null;
+        boolean isUpdate = (record != null);
+
+        if (record == null) {
+            record = new CycleRecord();
+            record.setUserId(1);
+            record.setCreateTime(LocalDateTime.now());
+        }
+
         record.setStartDate(startDatePicker.getValue());
         record.setCycleLength(cycleLengthSpinner.getValue());
-        record.setCreateTime(LocalDateTime.now());
         record.setUpdateTime(LocalDateTime.now());
 
-        cycleService.saveCycleRecord(record);
+        if (isUpdate) {
+            cycleService.updateCycleRecord(record);
+            System.out.println("[FemaleZone] 更新已有周期记录: id=" + record.getId() + ", startDate=" + record.getStartDate());
+        } else {
+            cycleService.saveCycleRecord(record);
+            System.out.println("[FemaleZone] 新增周期记录: startDate=" + record.getStartDate());
+        }
+
         loadData();
         showAlert("保存成功");
     }
 
     @FXML
     private void handleSaveGoal() {
+        System.out.println("[FemaleZone] handleSaveGoal() 被调用");
         if (goalToggleGroup == null) {
+            System.out.println("[FemaleZone] goalToggleGroup 为 null！");
             return;
         }
 
         RadioButton selected = (RadioButton) goalToggleGroup.getSelectedToggle();
         if (selected == null) {
+            System.out.println("[FemaleZone] 没有选中任何目标");
             showAlert("请选择健康目标");
             return;
         }
@@ -166,6 +272,8 @@ public class FemaleZoneController {
             goalType = HealthGoalType.MAINTAIN.name();
         }
 
+        System.out.println("[FemaleZone] 保存目标: " + goalType);
+
         currentGoal = new HealthGoal();
         currentGoal.setUserId(1);
         currentGoal.setGoalType(goalType);
@@ -175,6 +283,9 @@ public class FemaleZoneController {
         // 持久化到数据库
         if (healthGoalService != null) {
             healthGoalService.saveGoal(currentGoal);
+            System.out.println("[FemaleZone] 目标已保存到数据库");
+        } else {
+            System.err.println("[FemaleZone] healthGoalService 为 null，无法保存！");
         }
 
         loadCurrentGoal();
@@ -185,8 +296,11 @@ public class FemaleZoneController {
 
     @FXML
     private void handleViewRecipes() {
+        System.out.println("[FemaleZone] handleViewRecipes() 被调用");
+
         String phase = cycleService != null ? cycleService.getCurrentPhase() : "FOLLICULAR";
         CyclePhase cyclePhase = CyclePhase.valueOf(phase);
+        System.out.println("[FemaleZone] 专属食谱 - 当前阶段: " + cyclePhase.getLabel());
 
         // 获取用户身体数据
         BodyData bodyData = bodyDataService != null ? bodyDataService.getLatestBodyData() : null;
@@ -195,10 +309,14 @@ public class FemaleZoneController {
         if (bodyData != null) {
             targetCalMin = bodyData.getRecommendedCaloriesMin() != null ? bodyData.getRecommendedCaloriesMin() : 0;
             targetCalMax = bodyData.getRecommendedCaloriesMax() != null ? bodyData.getRecommendedCaloriesMax() : 3000;
+            System.out.println("[FemaleZone] 推荐热量范围: " + targetCalMin + " ~ " + targetCalMax);
+        } else {
+            System.out.println("[FemaleZone] bodyData 为 null，使用默认热量范围");
         }
 
         // 获取所有菜谱
         List<Recipe> allRecipes = recipeService != null ? recipeService.getAllRecipes() : Collections.emptyList();
+        System.out.println("[FemaleZone] 菜谱总数: " + allRecipes.size());
 
         // 根据周期阶段筛选推荐营养素
         List<Recipe> recommended = new ArrayList<>();
@@ -262,8 +380,11 @@ public class FemaleZoneController {
             return Double.compare(sb, sa);
         });
 
+        List<Recipe> topRecipes = recommended.stream().limit(10).collect(Collectors.toList());
+        System.out.println("[FemaleZone] 专属食谱筛选结果: " + recommended.size() + " 条匹配，取前 " + topRecipes.size() + " 条");
+
         String title = "专属食谱推荐 - " + cyclePhase.getLabel();
-        showRecipeDialog(title, recommended.stream().limit(10).collect(Collectors.toList()), cyclePhase);
+        showRecipeDialog(title, topRecipes, cyclePhase);
     }
 
     private double getRecipeScore(Recipe recipe, CyclePhase phase) {
@@ -294,6 +415,8 @@ public class FemaleZoneController {
 
     @FXML
     private void handleViewMatching() {
+        System.out.println("[FemaleZone] handleViewMatching() 被调用");
+
         // 从数据库获取用户偏好和忌口
         List<String> favoriteIngredients = userPreferenceService != null
                 ? userPreferenceService.getFavorites()
@@ -301,6 +424,9 @@ public class FemaleZoneController {
         List<String> avoidedIngredients = userPreferenceService != null
                 ? userPreferenceService.getAvoided()
                 : Arrays.asList("辣椒", "大蒜");
+
+        System.out.println("[FemaleZone] 偏好食材: " + favoriteIngredients);
+        System.out.println("[FemaleZone] 忌口食材: " + avoidedIngredients);
 
         // 计算当日营养缺口
         Map<String, Double> gaps = calculateNutritionGaps();
@@ -364,7 +490,10 @@ public class FemaleZoneController {
             return Double.compare(sb, sa);
         });
 
-        showMatchingDialog("个性化匹配推荐", matched.stream().limit(10).collect(Collectors.toList()), gaps, favoriteIngredients, avoidedIngredients);
+        List<Recipe> topMatched = matched.stream().limit(10).collect(Collectors.toList());
+        System.out.println("[FemaleZone] 专属匹配筛选结果: " + matched.size() + " 条匹配，取前 " + topMatched.size() + " 条");
+
+        showMatchingDialog("个性化匹配推荐", topMatched, gaps, favoriteIngredients, avoidedIngredients);
     }
 
     private double calculateMatchScore(Recipe recipe, List<String> favorites, Map<String, Double> gaps) {
@@ -398,7 +527,14 @@ public class FemaleZoneController {
 
     @FXML
     private void handleViewGapAnalysis() {
+        System.out.println("[FemaleZone] handleViewGapAnalysis() 被调用");
+
         Map<String, Double> gaps = calculateNutritionGaps();
+        System.out.printf("[FemaleZone] 营养缺口: 热量=%.0f, 蛋白质=%.1f, 碳水=%.1f, 脂肪=%.1f%n",
+                gaps.getOrDefault("calories", 0.0),
+                gaps.getOrDefault("protein", 0.0),
+                gaps.getOrDefault("carb", 0.0),
+                gaps.getOrDefault("fat", 0.0));
 
         StringBuilder message = new StringBuilder();
         message.append("========== 营养缺口分析 ==========\n\n");
@@ -466,6 +602,7 @@ public class FemaleZoneController {
         // 获取用户身体数据计算目标
         BodyData bodyData = bodyDataService != null ? bodyDataService.getLatestBodyData() : null;
         if (bodyData == null) {
+            System.out.println("[FemaleZone] calculateNutritionGaps: bodyData 为 null，返回全0缺口");
             return gaps;
         }
 
@@ -478,6 +615,7 @@ public class FemaleZoneController {
 
         // 查询当日实际摄入
         List<MealRecord> todayRecords = mealRecordService != null ? mealRecordService.getTodayRecords() : Collections.emptyList();
+        System.out.println("[FemaleZone] calculateNutritionGaps: 今日用餐记录 " + todayRecords.size() + " 条");
         double actualProtein = 0, actualCarb = 0, actualFat = 0, actualCal = 0;
 
         for (MealRecord record : todayRecords) {
@@ -492,6 +630,11 @@ public class FemaleZoneController {
                 }
             }
         }
+
+        System.out.printf("[FemaleZone] 目标: 热量=%.0f, 蛋白质=%.1f, 碳水=%.1f, 脂肪=%.1f%n",
+                targetCal, targetProtein, targetCarb, targetFat);
+        System.out.printf("[FemaleZone] 实际: 热量=%.0f, 蛋白质=%.1f, 碳水=%.1f, 脂肪=%.1f%n",
+                actualCal, actualProtein, actualCarb, actualFat);
 
         gaps.put("protein", targetProtein - actualProtein);
         gaps.put("carb", targetCarb - actualCarb);

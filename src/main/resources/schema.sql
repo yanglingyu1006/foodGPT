@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS weight_record (
     user_id INTEGER NOT NULL DEFAULT 1,
     weight REAL NOT NULL,
     record_date DATE NOT NULL,
-    create_time DATETIME NOT NULL
+    create_time DATETIME NOT NULL,
+    update_time DATETIME NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS recipe (

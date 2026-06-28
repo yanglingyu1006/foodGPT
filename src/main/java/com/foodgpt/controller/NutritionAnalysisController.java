@@ -59,6 +59,13 @@ public class NutritionAnalysisController {
         this.bodyDataService = bodyDataService;
     }
 
+    /**
+     * 刷新页面数据（从其他页面切换回来时调用）
+     */
+    public void refresh() {
+        loadData();
+    }
+
     @FXML
     private void initialize() {
         if (datePicker != null) {

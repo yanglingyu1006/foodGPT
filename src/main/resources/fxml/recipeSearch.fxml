@@ -3,8 +3,13 @@
 <?import javafx.scene.layout.*?>
 
 <VBox spacing="20" stylesheets="@../css/main.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
-    <Label text="搜索菜谱" styleClass="section-title"/>
-    
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="搜索菜谱" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="backBtn" text="返回菜谱管理" styleClass="btn-outline" onAction="#handleBack"/>
+    </HBox>
+
     <VBox spacing="10" styleClass="card">
         <Label text="搜索方式" styleClass="card-title"/>
         <HBox spacing="20">
@@ -12,16 +17,17 @@
             <RadioButton fx:id="onlineRadio" text="联网搜索"/>
         </HBox>
     </VBox>
-    
+
     <HBox spacing="10">
-        <TextField fx:id="searchField" promptText="输入关键词" prefWidth="300"/>
+        <TextField fx:id="searchField" promptText="输入关键词（如：番茄 鸡蛋）" prefWidth="300"/>
         <Button fx:id="searchBtn" text="搜索" styleClass="btn-primary" onAction="#handleSearch"/>
     </HBox>
-    
+
     <VBox spacing="10" styleClass="card">
         <Label text="搜索结果" styleClass="card-title"/>
         <ListView fx:id="resultListView" prefHeight="400"/>
         <HBox spacing="10">
+            <Button fx:id="viewDetailBtn" text="查看详情" styleClass="btn-outline" onAction="#handleViewDetail"/>
             <Button fx:id="saveBtn" text="保存到我的菜谱" styleClass="btn-primary" onAction="#handleSaveRecipe"/>
         </HBox>
     </VBox>

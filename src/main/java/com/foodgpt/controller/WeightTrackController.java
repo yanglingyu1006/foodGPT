@@ -29,9 +29,14 @@ public class WeightTrackController {
     private ListView<WeightRecord> recordListView;
 
     private WeightTrackService weightTrackService;
+    private MainLayoutController mainLayoutController;
 
     public void setService(WeightTrackService weightTrackService) {
         this.weightTrackService = weightTrackService;
+    }
+
+    public void setMainLayoutController(MainLayoutController mainLayoutController) {
+        this.mainLayoutController = mainLayoutController;
     }
 
     @FXML
@@ -86,9 +91,14 @@ public class WeightTrackController {
         record.setWeight(weightInput.getValue());
         record.setRecordDate(datePicker.getValue());
         record.setCreateTime(LocalDateTime.now());
+        record.setUpdateTime(LocalDateTime.now());
 
         weightTrackService.saveWeightRecord(record);
         loadData();
+        System.out.println("[WeightTrack] 体重记录已添加，刷新首页体重趋势");
+        if (mainLayoutController != null) {
+            mainLayoutController.refreshDashboard();
+        }
         showAlert("记录成功");
     }
 
@@ -98,6 +108,10 @@ public class WeightTrackController {
         if (selected != null) {
             weightTrackService.deleteWeightRecord(selected.getId());
             loadData();
+            System.out.println("[WeightTrack] 体重记录已删除，刷新首页体重趋势");
+            if (mainLayoutController != null) {
+                mainLayoutController.refreshDashboard();
+            }
             showAlert("删除成功");
         }
     }
