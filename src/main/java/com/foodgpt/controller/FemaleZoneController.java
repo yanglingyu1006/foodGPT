@@ -43,6 +43,9 @@ public class FemaleZoneController {
     private RecipeService recipeService;
     private MealRecordService mealRecordService;
     private NutritionService nutritionService;
+    private HealthGoalService healthGoalService;
+    private UserPreferenceService userPreferenceService;
+    private MainLayoutController mainLayoutController;
     private HealthGoal currentGoal;
 
     public void setService(CycleService cycleService) {
@@ -55,6 +58,18 @@ public class FemaleZoneController {
         this.recipeService = recipeService;
         this.mealRecordService = mealRecordService;
         this.nutritionService = nutritionService;
+    }
+
+    public void setHealthGoalService(HealthGoalService healthGoalService) {
+        this.healthGoalService = healthGoalService;
+    }
+
+    public void setUserPreferenceService(UserPreferenceService userPreferenceService) {
+        this.userPreferenceService = userPreferenceService;
+    }
+
+    public void setMainLayoutController(MainLayoutController mainLayoutController) {
+        this.mainLayoutController = mainLayoutController;
     }
 
     @FXML
@@ -100,6 +115,9 @@ public class FemaleZoneController {
     }
 
     private void loadCurrentGoal() {
+        if (healthGoalService != null) {
+            currentGoal = healthGoalService.getCurrentGoal();
+        }
         if (currentGoalLabel != null) {
             if (currentGoal != null) {
                 currentGoalLabel.setText("当前目标: " + HealthGoalType.valueOf(currentGoal.getGoalType()).getLabel());
@@ -153,6 +171,11 @@ public class FemaleZoneController {
         currentGoal.setGoalType(goalType);
         currentGoal.setCreateTime(LocalDateTime.now());
         currentGoal.setUpdateTime(LocalDateTime.now());
+
+        // 持久化到数据库
+        if (healthGoalService != null) {
+            healthGoalService.saveGoal(currentGoal);
+        }
 
         loadCurrentGoal();
         showAlert("健康目标设置成功");
@@ -271,9 +294,13 @@ public class FemaleZoneController {
 
     @FXML
     private void handleViewMatching() {
-        // 获取用户偏好和忌口（暂时使用默认偏好，后续可从 user_preference 表获取）
-        List<String> favoriteIngredients = Arrays.asList("鸡肉", "鸡蛋", "西红柿", "西兰花", "牛肉");
-        List<String> avoidedIngredients = Arrays.asList("辣椒", "大蒜");
+        // 从数据库获取用户偏好和忌口
+        List<String> favoriteIngredients = userPreferenceService != null
+                ? userPreferenceService.getFavorites()
+                : Arrays.asList("鸡肉", "鸡蛋", "西红柿", "西兰花", "牛肉");
+        List<String> avoidedIngredients = userPreferenceService != null
+                ? userPreferenceService.getAvoided()
+                : Arrays.asList("辣椒", "大蒜");
 
         // 计算当日营养缺口
         Map<String, Double> gaps = calculateNutritionGaps();

@@ -57,6 +57,12 @@ public class MainLayoutController {
         }
     }
 
+    public void showNutrition() {
+        if (nutritionContent != null) {
+            switchTab(tabNutrition, nutritionContent);
+        }
+    }
+
     // --- 状态栏更新 ---
     public void updateStatusBar(int calories, double protein, double carb, double fat) {
         if (statusCalories != null) statusCalories.setText(calories + " kcal");

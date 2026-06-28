@@ -51,6 +51,10 @@ public class FoodGPTApplication extends Application {
         Parent root = mainLoader.load();
         mainLayoutController = mainLoader.getController();
 
+        // 设置导航引用
+        dashboardController.setMainLayoutController(mainLayoutController);
+        femaleZoneController.setMainLayoutController(mainLayoutController);
+
         // 设置各页内容
         mainLayoutController.setDashboardContent(loadFxml("dashboard.fxml", dashboardController));
         mainLayoutController.setRecipeContent(loadFxml("recipeManage.fxml", recipeManageController));
@@ -139,6 +143,8 @@ public class FoodGPTApplication extends Application {
         MealRecordMapper mealRecordMapper = session.getMapper(MealRecordMapper.class);
         NutritionRecordMapper nutritionRecordMapper = session.getMapper(NutritionRecordMapper.class);
         CycleRecordMapper cycleRecordMapper = session.getMapper(CycleRecordMapper.class);
+        HealthGoalMapper healthGoalMapper = session.getMapper(HealthGoalMapper.class);
+        UserPreferenceMapper userPreferenceMapper = session.getMapper(UserPreferenceMapper.class);
 
         AppConfig appConfig = AppConfig.getInstance();
 
@@ -149,9 +155,11 @@ public class FoodGPTApplication extends Application {
         NutritionService nutritionService = new NutritionServiceImpl(nutritionRecordMapper, mealRecordMapper, recipeMapper);
         CycleService cycleService = new CycleServiceImpl(cycleRecordMapper);
         AiAdvisorService aiAdvisorService = new AiAdvisorServiceImpl(appConfig);
+        HealthGoalService healthGoalService = new HealthGoalServiceImpl(healthGoalMapper);
+        UserPreferenceService userPreferenceService = new UserPreferenceServiceImpl(userPreferenceMapper);
 
         dashboardController = new DashboardController();
-        dashboardController.setServices(bodyDataService, nutritionService);
+        dashboardController.setServices(bodyDataService, nutritionService, weightTrackService);
 
         weightTrackController = new WeightTrackController();
         weightTrackController.setService(weightTrackService);
@@ -174,6 +182,8 @@ public class FoodGPTApplication extends Application {
         femaleZoneController = new FemaleZoneController();
         femaleZoneController.setService(cycleService);
         femaleZoneController.setServices(bodyDataService, recipeService, mealRecordService, nutritionService);
+        femaleZoneController.setHealthGoalService(healthGoalService);
+        femaleZoneController.setUserPreferenceService(userPreferenceService);
 
         aiAdvisorController = new AiAdvisorController();
         aiAdvisorController.setService(aiAdvisorService);

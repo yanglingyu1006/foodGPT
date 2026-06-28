@@ -95,7 +95,7 @@
 |------|------|----------|----------|
 | **View层** | 界面展示与用户交互 | JavaFX FXML + Controller | Dashboard、MealRecord、Recipe等FXML视图 |
 | **Controller层** | 事件处理与视图逻辑 | JavaFX Controller类 | BodyDataCtrl、MealRecordCtrl、AiAdvisorCtrl等 |
-| **Service层** | 业务逻辑处理 | Service 接口 + 实现类 | BodyDataService、NutritionService、AiAdvisorService等 |
+| **Service层** | 业务逻辑处理 | Service 接口 + 实现类 | BodyDataService、NutritionService、AiAdvisorService、HealthGoalService、UserPreferenceService等 |
 | **Mapper层** | 数据库访问 | MyBatis-Plus BaseMapper | BodyDataMapper、RecipeMapper、CycleRecordMapper等 |
 | **Entity层** | 实体类，对应数据库表结构 | POJO类 | BodyData、Recipe、MealRecord、CycleRecord等 |
 | **Config层** | 配置管理 | JSON配置文件 + Java类 | AppConfig、ApiConfig、DatabaseConfig |
@@ -112,16 +112,15 @@ foodGPT/                              # 项目根目录
 │       │       ├── FoodGPTApplication.java    # 启动类
 │       │       ├── Launcher.java              # 启动器（解决 JavaFX 模块路径问题）
 │       │       ├── controller/                # 控制器层
+│       │       │   ├── MainLayoutController.java
 │       │       │   ├── DashboardController.java
-│       │       │   ├── BodyDataController.java
 │       │       │   ├── WeightTrackController.java
 │       │       │   ├── RecipeManageController.java
 │       │       │   ├── RecipeSearchController.java
 │       │       │   ├── MealRecordController.java
 │       │       │   ├── NutritionAnalysisController.java
 │       │       │   ├── FemaleZoneController.java
-│       │       │   ├── AiAdvisorController.java
-│       │       │   └── MainLayoutController.java
+│       │       │   └── AiAdvisorController.java
 │       │       ├── service/                   # 服务层
 │       │       │   ├── BodyDataService.java
 │       │       │   ├── WeightTrackService.java
@@ -131,6 +130,8 @@ foodGPT/                              # 项目根目录
 │       │       │   ├── CycleService.java
 │       │       │   ├── AiAdvisorService.java
 │       │       │   ├── ExternalRecipeService.java
+│       │       │   ├── HealthGoalService.java
+│       │       │   ├── UserPreferenceService.java
 │       │       │   └── impl/                  # 服务实现类
 │       │       │       ├── BodyDataServiceImpl.java
 │       │       │       ├── WeightTrackServiceImpl.java
@@ -139,14 +140,18 @@ foodGPT/                              # 项目根目录
 │       │       │       ├── NutritionServiceImpl.java
 │       │       │       ├── CycleServiceImpl.java
 │       │       │       ├── AiAdvisorServiceImpl.java
-│       │       │       └── ExternalRecipeServiceImpl.java
+│       │       │       ├── ExternalRecipeServiceImpl.java
+│       │       │       ├── HealthGoalServiceImpl.java
+│       │       │       └── UserPreferenceServiceImpl.java
 │       │       ├── mapper/                    # 数据访问层
 │       │       │   ├── BodyDataMapper.java
 │       │       │   ├── WeightRecordMapper.java
 │       │       │   ├── RecipeMapper.java
 │       │       │   ├── MealRecordMapper.java
 │       │       │   ├── NutritionRecordMapper.java
-│       │       │   └── CycleRecordMapper.java
+│       │       │   ├── CycleRecordMapper.java
+│       │       │   ├── HealthGoalMapper.java
+│       │       │   └── UserPreferenceMapper.java
 │       │       ├── entity/                    # 实体类
 │       │       │   ├── BodyData.java
 │       │       │   ├── WeightRecord.java
@@ -175,7 +180,6 @@ foodGPT/                              # 项目根目录
 │           ├── fxml/                          # FXML布局文件
 │           │   ├── mainLayout.fxml
 │           │   ├── dashboard.fxml
-│           │   ├── bodyData.fxml
 │           │   ├── weightTrack.fxml
 │           │   ├── recipeManage.fxml
 │           │   ├── recipeSearch.fxml

@@ -89,7 +89,6 @@ foodGPT/
 │   │   ├── controller/                    # 控制器层
 │   │   │   ├── MainLayoutController.java  # 主布局（侧边栏+导航）
 │   │   │   ├── DashboardController.java   # 首页仪表盘
-│   │   │   ├── BodyDataController.java    # 身体数据
 │   │   │   ├── WeightTrackController.java # 体重追踪
 │   │   │   ├── RecipeManageController.java# 菜谱管理
 │   │   │   ├── RecipeSearchController.java# 菜谱搜索
@@ -106,17 +105,28 @@ foodGPT/
 │   │   │   ├── CycleService.java
 │   │   │   ├── AiAdvisorService.java
 │   │   │   ├── ExternalRecipeService.java
+│   │   │   ├── HealthGoalService.java
+│   │   │   ├── UserPreferenceService.java
 │   │   │   └── impl/                      # 服务实现
 │   │   │       ├── BodyDataServiceImpl.java
+│   │   │       ├── WeightTrackServiceImpl.java
 │   │   │       ├── RecipeServiceImpl.java
-│   │   │       └── ...
+│   │   │       ├── MealRecordServiceImpl.java
+│   │   │       ├── NutritionServiceImpl.java
+│   │   │       ├── CycleServiceImpl.java
+│   │   │       ├── AiAdvisorServiceImpl.java
+│   │   │       ├── ExternalRecipeServiceImpl.java
+│   │   │       ├── HealthGoalServiceImpl.java
+│   │   │       └── UserPreferenceServiceImpl.java
 │   │   ├── mapper/                        # 数据访问层
 │   │   │   ├── BodyDataMapper.java
 │   │   │   ├── WeightRecordMapper.java
 │   │   │   ├── RecipeMapper.java
 │   │   │   ├── MealRecordMapper.java
 │   │   │   ├── NutritionRecordMapper.java
-│   │   │   └── CycleRecordMapper.java
+│   │   │   ├── CycleRecordMapper.java
+│   │   │   ├── HealthGoalMapper.java
+│   │   │   └── UserPreferenceMapper.java
 │   │   ├── entity/                        # 实体类
 │   │   │   ├── BodyData.java
 │   │   │   ├── Recipe.java
@@ -143,7 +153,6 @@ foodGPT/
 │       ├── fxml/                          # FXML 布局文件
 │       │   ├── mainLayout.fxml
 │       │   ├── dashboard.fxml
-│       │   ├── bodyData.fxml
 │       │   ├── weightTrack.fxml
 │       │   ├── recipeManage.fxml
 │       │   ├── recipeSearch.fxml

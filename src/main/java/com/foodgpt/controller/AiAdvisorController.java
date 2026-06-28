@@ -19,6 +19,8 @@ public class AiAdvisorController {
     private TextField inputField;
     @FXML
     private Button sendBtn;
+    @FXML
+    private Button newChatBtn;
 
     private AiAdvisorService aiAdvisorService;
     private ObservableList<String> messages = FXCollections.observableArrayList();
@@ -35,6 +37,15 @@ public class AiAdvisorController {
         }
         
         messages.add("AI: 你好！我是你的AI饮食顾问，有什么关于饮食健康的问题可以问我。");
+    }
+
+    @FXML
+    private void handleNewChat() {
+        messages.clear();
+        messages.add("AI: 你好！我是你的AI饮食顾问，有什么关于饮食健康的问题可以问我。");
+        if (inputField != null) {
+            inputField.clear();
+        }
     }
 
     @FXML
