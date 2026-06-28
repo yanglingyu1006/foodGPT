@@ -33,7 +33,6 @@ public class FoodGPTApplication extends Application {
     private SqlSessionFactory sqlSessionFactory;
     private MainLayoutController mainLayoutController;
     private DashboardController dashboardController;
-    private WeightTrackController weightTrackController;
     private RecipeManageController recipeManageController;
     private RecipeSearchController recipeSearchController;
     private MealRecordController mealRecordController;
@@ -170,8 +169,6 @@ public class FoodGPTApplication extends Application {
         dashboardController = new DashboardController();
         dashboardController.setServices(bodyDataService, nutritionService, weightTrackService);
 
-        weightTrackController = new WeightTrackController();
-        weightTrackController.setService(weightTrackService);
 
         recipeManageController = new RecipeManageController();
         recipeManageController.setService(recipeService);

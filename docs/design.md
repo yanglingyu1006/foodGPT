@@ -114,7 +114,6 @@ foodGPT/                              # 项目根目录
 │       │       ├── controller/                # 控制器层
 │       │       │   ├── MainLayoutController.java
 │       │       │   ├── DashboardController.java
-│       │       │   ├── WeightTrackController.java
 │       │       │   ├── RecipeManageController.java
 │       │       │   ├── RecipeSearchController.java
 │       │       │   ├── RecipeDetailController.java
