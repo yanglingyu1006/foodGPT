@@ -15,6 +15,8 @@
 | HTTP 客户端 | OkHttp | 4.12.0 |
 | JSON 处理 | Jackson | 2.16.0 |
 | 图标库 | Ikonli | 12.3.1 |
+| 日志 | SLF4J + Logback | 2.0.9 |
+| 简化代码 | Lombok | 1.18.42 |
 | 构建工具 | Maven | 3.x |
 
 ---
@@ -24,8 +26,7 @@
 ### 健康仪表盘
 - 录入身高、体重、年龄、活动量等身体数据
 - 自动计算 BMI（身体质量指数）和 BMR（基础代谢率）
-- 体重趋势折线图、今日营养进度条、均衡度评分
-- 快捷操作入口
+- 体重趋势折线图、三大营养素进度条、均衡度评分
 
 ### 菜谱管理
 - 菜谱搜索、分类浏览、分页展示
@@ -88,6 +89,7 @@ foodGPT/
 │   │   ├── controller/                    # 控制器层
 │   │   │   ├── MainLayoutController.java  # 主布局（侧边栏+导航）
 │   │   │   ├── DashboardController.java   # 首页仪表盘
+│   │   │   ├── BodyDataController.java    # 身体数据
 │   │   │   ├── WeightTrackController.java # 体重追踪
 │   │   │   ├── RecipeManageController.java# 菜谱管理
 │   │   │   ├── RecipeSearchController.java# 菜谱搜索
@@ -103,7 +105,11 @@ foodGPT/
 │   │   │   ├── NutritionService.java
 │   │   │   ├── CycleService.java
 │   │   │   ├── AiAdvisorService.java
+│   │   │   ├── ExternalRecipeService.java
 │   │   │   └── impl/                      # 服务实现
+│   │   │       ├── BodyDataServiceImpl.java
+│   │   │       ├── RecipeServiceImpl.java
+│   │   │       └── ...
 │   │   ├── mapper/                        # 数据访问层
 │   │   │   ├── BodyDataMapper.java
 │   │   │   ├── WeightRecordMapper.java
@@ -113,15 +119,15 @@ foodGPT/
 │   │   │   └── CycleRecordMapper.java
 │   │   ├── entity/                        # 实体类
 │   │   │   ├── BodyData.java
-│   │   │   ├── WeightRecord.java
 │   │   │   ├── Recipe.java
 │   │   │   ├── MealRecord.java
-│   │   │   ├── NutritionRecord.java
 │   │   │   ├── CycleRecord.java
 │   │   │   ├── UserPreference.java
 │   │   │   └── HealthGoal.java
 │   │   ├── config/                        # 配置类
-│   │   │   └── AppConfig.java
+│   │   │   ├── AppConfig.java
+│   │   │   ├── ApiConfig.java
+│   │   │   └── DatabaseConfig.java
 │   │   ├── enums/                         # 枚举类
 │   │   │   ├── ActivityLevel.java
 │   │   │   ├── CyclePhase.java
@@ -130,28 +136,39 @@ foodGPT/
 │   │   │   └── RecipeCategory.java
 │   │   └── util/                          # 工具类
 │   │       ├── BmiBmrCalculator.java
-│   │       └── JsonUtil.java
+│   │       ├── NutritionCalculator.java
+│   │       ├── JsonUtil.java
+│   │       └── OkHttpUtil.java
 │   └── resources/
 │       ├── fxml/                          # FXML 布局文件
 │       │   ├── mainLayout.fxml
 │       │   ├── dashboard.fxml
+│       │   ├── bodyData.fxml
 │       │   ├── weightTrack.fxml
 │       │   ├── recipeManage.fxml
+│       │   ├── recipeSearch.fxml
 │       │   ├── mealRecord.fxml
 │       │   ├── nutritionAnalysis.fxml
 │       │   ├── femaleZone.fxml
 │       │   └── aiAdvisor.fxml
 │       ├── css/
-│       │   └── main.css                   # 全局样式
+│       │   ├── main.css                   # 全局样式
+│       │   ├── dashboard.css              # 仪表盘样式
+│       │   ├── femaleZone.css             # 女性专区样式
+│       │   └── nutrition.css              # 营养分析样式
+│       ├── mybatis-config.xml             # MyBatis 配置
+│       ├── app-config.json                # 默认应用配置
 │       └── schema.sql                     # 数据库建表脚本
 ├── config/
-│   └── app-config.json                    # 应用配置（API 密钥等）
+│   └── app-config.json                    # 用户配置（API 密钥等）
 ├── data/
 │   └── foodgpt.db                         # SQLite 数据库（自动创建）
 ├── docs/
-│   └── design.md                          # 设计文档
+│   ├── design.md                          # 设计文档
+│   └── requirements.md                    # 需求文档
 ├── pom.xml
-└── README.md
+├── run.bat                                # Windows 启动脚本
+└── run.sh                                 # Linux/Mac 启动脚本
 ```
 
 ---
@@ -186,7 +203,7 @@ foodGPT/
 
 ### 布局结构
 
-- **左侧边栏**：120px 宽度，品牌标识 + 竖排文字"食物语·知味"
+- **左侧边栏**：120px 宽度，品牌竖排文字"食物语·知味"，底部标签"食·养·记"
 - **顶部导航栏**：首页 / 菜谱 / 记录 / 分析 / 专区 / AI顾问，选中高亮
 - **底部状态栏**：今日摄入 / 蛋白质 / 碳水 / 脂肪
 - **卡片样式**：圆角 16px，白色背景，阴影 `rgba(74,44,26,0.05)`

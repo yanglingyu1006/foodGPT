@@ -6,13 +6,15 @@
 
 | 分类 | 技术 | 版本 |
 |------|------|------|
-| 语言 | Java | 25 |
+| 语言 | Java | 21 |
 | 框架 | JavaFX | 21 |
 | ORM | MyBatis-Plus | 3.5.5 |
-| 数据库 | SQLite | 3.x |
+| 数据库 | SQLite | 3.44 |
 | HTTP客户端 | OkHttp | 4.12.0 |
 | JSON处理 | Jackson | 2.16.0 |
 | 图标库 | Ikonli | 12.3.1 |
+| 日志 | SLF4J + Logback | 2.0.9 / 1.4.11 |
+| 简化代码 | Lombok | 1.18.42 |
 
 ### 1.2 架构风格
 
@@ -93,7 +95,7 @@
 |------|------|----------|----------|
 | **View层** | 界面展示与用户交互 | JavaFX FXML + Controller | Dashboard、MealRecord、Recipe等FXML视图 |
 | **Controller层** | 事件处理与视图逻辑 | JavaFX Controller类 | BodyDataCtrl、MealRecordCtrl、AiAdvisorCtrl等 |
-| **Service层** | 业务逻辑处理 | Spring Service | BodyDataService、NutritionService、AiAdvisorService等 |
+| **Service层** | 业务逻辑处理 | Service 接口 + 实现类 | BodyDataService、NutritionService、AiAdvisorService等 |
 | **Mapper层** | 数据库访问 | MyBatis-Plus BaseMapper | BodyDataMapper、RecipeMapper、CycleRecordMapper等 |
 | **Entity层** | 实体类，对应数据库表结构 | POJO类 | BodyData、Recipe、MealRecord、CycleRecord等 |
 | **Config层** | 配置管理 | JSON配置文件 + Java类 | AppConfig、ApiConfig、DatabaseConfig |
@@ -108,6 +110,7 @@ foodGPT/                              # 项目根目录
 │       ├── java/
 │       │   └── com/foodgpt/
 │       │       ├── FoodGPTApplication.java    # 启动类
+│       │       ├── Launcher.java              # 启动器（解决 JavaFX 模块路径问题）
 │       │       ├── controller/                # 控制器层
 │       │       │   ├── DashboardController.java
 │       │       │   ├── BodyDataController.java
@@ -117,7 +120,8 @@ foodGPT/                              # 项目根目录
 │       │       │   ├── MealRecordController.java
 │       │       │   ├── NutritionAnalysisController.java
 │       │       │   ├── FemaleZoneController.java
-│       │       │   └── AiAdvisorController.java
+│       │       │   ├── AiAdvisorController.java
+│       │       │   └── MainLayoutController.java
 │       │       ├── service/                   # 服务层
 │       │       │   ├── BodyDataService.java
 │       │       │   ├── WeightTrackService.java
@@ -125,7 +129,17 @@ foodGPT/                              # 项目根目录
 │       │       │   ├── MealRecordService.java
 │       │       │   ├── NutritionService.java
 │       │       │   ├── CycleService.java
-│       │       │   └── AiAdvisorService.java
+│       │       │   ├── AiAdvisorService.java
+│       │       │   ├── ExternalRecipeService.java
+│       │       │   └── impl/                  # 服务实现类
+│       │       │       ├── BodyDataServiceImpl.java
+│       │       │       ├── WeightTrackServiceImpl.java
+│       │       │       ├── RecipeServiceImpl.java
+│       │       │       ├── MealRecordServiceImpl.java
+│       │       │       ├── NutritionServiceImpl.java
+│       │       │       ├── CycleServiceImpl.java
+│       │       │       ├── AiAdvisorServiceImpl.java
+│       │       │       └── ExternalRecipeServiceImpl.java
 │       │       ├── mapper/                    # 数据访问层
 │       │       │   ├── BodyDataMapper.java
 │       │       │   ├── WeightRecordMapper.java
@@ -150,7 +164,7 @@ foodGPT/                              # 项目根目录
 │       │       │   ├── BmiBmrCalculator.java
 │       │       │   ├── NutritionCalculator.java
 │       │       │   ├── JsonUtil.java
-│       │       │   
+│       │       │   └── OkHttpUtil.java
 │       │       └── enums/                     # 枚举类
 │       │           ├── ActivityLevel.java
 │       │           ├── MealType.java
@@ -159,6 +173,7 @@ foodGPT/                              # 项目根目录
 │       │           └── CyclePhase.java
 │       └── resources/
 │           ├── fxml/                          # FXML布局文件
+│           │   ├── mainLayout.fxml
 │           │   ├── dashboard.fxml
 │           │   ├── bodyData.fxml
 │           │   ├── weightTrack.fxml
@@ -171,18 +186,22 @@ foodGPT/                              # 项目根目录
 │           ├── css/                           # CSS样式文件
 │           │   ├── main.css
 │           │   ├── dashboard.css
-│           │   ├── card.css
-│           │   └── button.css
-│           ├── icons/                         # 图标配置
-│           │   └── ikonli-fonts.properties
-│           ├── mybatis-plus/                  # MyBatis配置
-│           │   └── MybatisPlusConfig.java
-│           └── application.yml                # 应用配置
+│           │   ├── femaleZone.css
+│           │   └── nutrition.css
+│           ├── app-config.json                # 默认应用配置
+│           ├── mybatis-config.xml             # MyBatis 全局配置
+│           └── schema.sql                     # 数据库建表脚本
 ├── config/                                    # 运行时配置目录（程序根目录）
-│   └── app-config.json                        # 应用配置文件
+│   └── app-config.json                        # 用户配置文件（API密钥等）
 ├── data/                                      # 数据目录（程序根目录）
 │   └── foodgpt.db                             # SQLite数据库文件
-└── pom.xml                                    # Maven依赖配置
+├── docs/                                      # 文档目录
+│   ├── design.md                              # 设计文档
+│   └── requirements.md                        # 需求文档
+├── .gitignore
+├── pom.xml                                    # Maven依赖配置
+├── run.bat                                    # Windows 启动脚本
+└── run.sh                                     # Linux/Mac 启动脚本
 ```
 
 ### 1.5 数据流向
@@ -458,17 +477,17 @@ private List<String> steps;
 
 | 颜色名称 | Hex值 | 用途 |
 |----------|-------|------|
-| 主色调 | #FF6B8A | 按钮、选中状态、强调色 |
-| 主色调浅 | #FFE4EA | 卡片背景、输入框焦点 |
-| 成功色 | #67C23A | 达标状态、完成标记 |
-| 警告色 | #E6A23C | 未达标状态、警告提示 |
-| 危险色 | #F56C6C | 删除按钮、错误提示 |
-| 文字主色 | #303133 | 主要文字 |
-| 文字次色 | #606266 | 次要文字 |
-| 文字浅色 | #909399 | 提示文字 |
-| 边框色 | #EBEEF5 | 分隔线、输入框边框 |
-| 背景色 | #F5F7FA | 页面背景 |
-| 卡片背景 | #FFFFFF | 卡片背景 |
+| 主背景色 | #FDF5E6 | 页面全局背景（奶油白） |
+| 主色调 | #8B5A2B | 按钮、选中状态、强调色（焦糖棕） |
+| 深色文字 | #4A2C1A | 标题、正文文字（深巧克力） |
+| 装饰色 | #E8B86D | 进度条、进度指示器、头像背景（橙黄） |
+| 卡片背景 | #FFFFFF | 卡片容器背景 |
+| 导航栏背景 | #FFFFFF | 导航栏背景 |
+| 状态栏背景 | #FFFFFF | 底部状态栏背景 |
+| 主色调浅 | rgba(139, 90, 43, 0.08) | 按钮悬停、输入框焦点背景 |
+| 边框色 | rgba(74, 44, 26, 0.15) | 输入框边框、分隔线 |
+| 阴影色 | rgba(74, 44, 26, 0.05) | 卡片阴影 |
+| 按钮禁用 | #CCCCCC | 禁用按钮背景 |
 
 #### 4.1.2 字体规范
 
@@ -504,43 +523,43 @@ private List<String> steps;
 **布局结构**：
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  顶部导航栏                                          │
-│  ┌────────────┬───────────────────────┬───────────┐ │
-│  │食物语Logo  │  标签页切换            │ 用户菜单  │ │
-│  │  🍽️       │ 首页|菜谱|记录|分析|专区│  设置     │ │
-│  └────────────┴───────────────────────┴───────────┘ │
-├─────────────────────────────────────────────────────┤
-│  主体区域 - 仪表盘                                   │
-│  ┌───────────────────────────────────────────────┐ │
-│  │  我的身体数据卡片（左输入区+右BMI/BMR显示）     │ │
-│  └───────────────────────────────────────────────┘ │
-│  ┌───────────────┬───────────────┬───────────────┐ │
-│  │ 体重趋势卡片  │ 今日营养进度   │ 均衡度评分     │ │
-│  │ （折线图）    │ （三个进度条） │ （圆形评分）   │ │
-│  └───────────────┴───────────────┴───────────────┘ │
-│  ┌───────────────────────────────────────────────┐ │
-│  │ 快捷操作入口（记录用餐/搜索菜谱/查看报告）      │ │
-│  └───────────────────────────────────────────────┘ │
-├─────────────────────────────────────────────────────┤
-│  底部状态栏                                          │
-│  今日摄入：XXkcal | 蛋白质XXg | 碳水XXg | 脂肪XXg   │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  左侧边栏（120px）│ 右侧内容区                                    │
+│  ┌──────────────┐│ ┌────────────────────────────────────────────┐│
+│  │     🍽       ││ │  顶部导航栏                                 ││
+│  │              ││ │  食物语  首页|菜谱|记录|分析|专区|AI顾问    ││
+│  │  食·物·语    ││ ├────────────────────────────────────────────┤│
+│  │  ··知·味     ││ │  主体区域 - 仪表盘                          ││
+│  │              ││ │  ┌────────────────────────────────────────┐ ││
+│  │              ││ │  │ 身体数据卡片（两栏网格布局）             │││
+│  │              ││ │  │ 身高(cm)│体重(kg)   BMI圆圈(140px)      │││
+│  │              ││ │  │ 年龄    │活动量     BMI数值              │││
+│  │              ││ │  │ [保存数据]               BMR数值        │││
+│  │              ││ │  └────────────────────────────────────────┘ ││
+│  │  食·养·记    ││ │  ┌──────────┬──────────┬──────────────────┐││
+│  └──────────────┘│ │  │体重趋势折│今日营养  │均衡度评分        │││
+│                   │ │  │线图      │进度条    │圆圈(140px)/85分  │││
+│                   │ │  └──────────┴──────────┴──────────────────┘││
+│                   │ ├────────────────────────────────────────────┤│
+│                   │ │  底部状态栏                                  ││
+│                   │ │  今日摄入：XXkcal | 蛋白质XXg | 碳水XXg | 脂肪XXg│
+│                   │ └────────────────────────────────────────────┘│
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 **关键组件**：
 
 | 组件 | 类型 | ID | 说明 |
 |------|------|-----|------|
-| bodyDataCard | VBox | bodyDataCard | 身体数据卡片容器 |
-| heightSpinner | Spinner | heightSpinner | 身高输入（100-250） |
-| weightSpinner | Spinner | weightSpinner | 体重输入（30-200） |
-| ageSpinner | Spinner | ageSpinner | 年龄输入（10-100） |
-| activityComboBox | ComboBox | activityComboBox | 活动量选择 |
-| bmiIndicator | ProgressIndicator | bmiIndicator | BMI圆形指示器 |
+| heightSpinner | Spinner | heightSpinner | 身高输入（100-250，永不禁用） |
+| weightSpinner | Spinner | weightSpinner | 体重输入（30-200，永不禁用） |
+| ageSpinner | Spinner | ageSpinner | 年龄输入（10-100，永不禁用） |
+| activityComboBox | ComboBox | activityComboBox | 活动量选择（永不禁用） |
+| bmiIndicator | ProgressIndicator | bmiIndicator | BMI圆形指示器（140×140） |
+| bmiLabel | Label | bmiLabel | BMI数值显示 |
 | bmrLabel | Label | bmrLabel | BMR数值显示 |
-| saveBtn | Button | saveBtn | 保存按钮（粉色） |
-| editBtn | Button | editBtn | 修改按钮（边框） |
+| balanceScoreIndicator | ProgressIndicator | balanceScoreIndicator | 均衡度评分圆形指示器（140×140） |
+| saveBtn | Button | saveBtn | 保存数据按钮（焦糖棕） |
 
 #### 4.2.2 体重追踪界面
 
@@ -607,15 +626,16 @@ private List<String> steps;
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  顶部工具栏                                          │
-│  日期选择器 + 添加记录按钮                            │
-│  餐次切换标签（早餐/午餐/晚餐/加餐）                  │
+│  左侧：今日营养汇总                                  │
+│  热量/蛋白质/碳水/脂肪 数值卡片                      │
 ├─────────────────────────────────────────────────────┤
-│  记录列表                                            │
-│  当前餐次记录卡片（菜品/份量/营养素/编辑/删除）       │
+│  右侧：添加记录（两栏布局）                          │
+│  日期          │ 餐次                               │
+│  菜谱          │ 份量                               │
+│  [添加记录]（占满一行）                              │
 ├─────────────────────────────────────────────────────┤
-│  底部汇总条                                          │
-│  今日摄入：XXkcal | 蛋白质XXg | 碳水XXg | 脂肪XXg   │
+│  今日记录列表                                        │
+│  日期-餐次 / 菜谱-份量 / 营养素 / 删除按钮           │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -654,10 +674,13 @@ private List<String> steps;
 │  热量目标显示                                        │
 ├─────────────────────────────────────────────────────┤
 │  周期管理                                            │
-│  阶段指示器 + 日历 + 周期信息                        │
+│  阶段指示器 + 周期信息                                │
 ├─────────────────────────────────────────────────────┤
-│  功能入口                                            │
-│  专属食谱 / 专属匹配 / AI健康顾问 / 营养缺口分析     │
+│  功能入口（三列卡片）                                 │
+│  专属食谱    │ 专属匹配    │ 营养缺口分析              │
+│  根据周期    │ 个性化营养  │ 发现营养缺失              │
+│  阶段推荐    │ 匹配        │                          │
+│  [查看]      │ [查看]      │ [查看]                   │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -685,22 +708,27 @@ private List<String> steps;
 
 #### 4.3.1 main.css（全局样式）
 
+**文件路径**：`src/main/resources/css/main.css`
+
+核心样式定义：
+
 ```css
 .root {
-    -fx-background-color: #F5F7FA;
+    -fx-background-color: #FDF5E6;  /* 奶油白背景 */
     -fx-font-family: "System";
 }
 
+/* 卡片容器 */
 .card {
     -fx-background-color: #FFFFFF;
     -fx-background-radius: 16px;
-    -fx-border-radius: 16px;
     -fx-padding: 24px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 4);
+    -fx-effect: dropshadow(gaussian, rgba(74,44,26,0.05), 10, 0, 0, 4);
 }
 
+/* 主按钮 */
 .btn-primary {
-    -fx-background-color: #FF6B8A;
+    -fx-background-color: #8B5A2B;
     -fx-text-fill: #FFFFFF;
     -fx-background-radius: 20px;
     -fx-padding: 8px 24px;
@@ -708,23 +736,75 @@ private List<String> steps;
     -fx-font-weight: bold;
 }
 
+/* 边框按钮 */
 .btn-outline {
     -fx-background-color: transparent;
-    -fx-text-fill: #FF6B8A;
-    -fx-border-color: #FF6B8A;
+    -fx-text-fill: #8B5A2B;
+    -fx-border-color: #8B5A2B;
     -fx-border-radius: 20px;
-    -fx-background-radius: 20px;
     -fx-padding: 8px 24px;
     -fx-font-size: 14px;
 }
 
+/* 输入控件 */
 .text-field, .combo-box, .spinner {
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
-    -fx-border-color: #EBEEF5;
+    -fx-border-color: rgba(74, 44, 26, 0.15);
     -fx-padding: 8px 12px;
+    -fx-background-color: #FFFFFF;
+}
+
+/* 导航栏 */
+.nav-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 0 32px;
+    -fx-min-height: 60px;
+}
+
+.nav-tab {
+    -fx-font-size: 16px;
+    -fx-padding: 18px 20px 14px 20px;
+    -fx-text-fill: rgba(74, 44, 26, 0.6);
+}
+
+.nav-tab-active {
+    -fx-text-fill: #8B5A2B;
+    -fx-font-weight: bold;
+    -fx-border-color: #8B5A2B;
+    -fx-border-width: 0 0 3px 0;
+}
+
+/* 进度条 */
+.progress-bar {
+    -fx-accent: #E8B86D;
+}
+
+/* 圆形进度指示器 */
+.progress-indicator {
+    -fx-progress-color: #E8B86D;
+}
+
+/* 侧边栏 */
+.sidebar {
+    -fx-background-color: #FDF5E6;
+    -fx-padding: 20px 0;
+}
+
+.sidebar-brand {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8B5A2B;
 }
 ```
+
+#### 4.3.2 其他 CSS 文件
+
+| 文件 | 用途 |
+|------|------|
+| `dashboard.css` | 仪表盘卡片渐变背景（绿色系） |
+| `femaleZone.css` | 女性专区卡片渐变背景（粉色系） |
+| `nutrition.css` | 营养分析图表样式 |
 
 ---
 
