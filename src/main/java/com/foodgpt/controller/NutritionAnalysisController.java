@@ -21,8 +21,22 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 营养分析控制器
+ * 
+ * 功能模块：
+ * 1. 营养摄入统计 - 按餐次统计蛋白质、碳水、脂肪摄入
+ * 2. 营养柱状图 - 分组柱状图展示各餐次营养素摄入
+ * 3. 营养进度条 - 显示蛋白质、碳水、脂肪、热量进度
+ * 4. 均衡度评分 - 计算三大营养素比例均衡度
+ * 5. 日期切换 - 切换日期查看不同日期的营养数据
+ * 
+ * @author FoodGPT
+ */
 public class NutritionAnalysisController {
 
+    // ==================== FXML 组件注入 ====================
+    
     @FXML
     private DatePicker datePicker;
     @FXML
@@ -50,11 +64,13 @@ public class NutritionAnalysisController {
     private RecipeService recipeService;
     private BodyDataService bodyDataService;
 
+    /** 注入用餐记录和菜谱服务 */
     public void setServices(MealRecordService mealRecordService, RecipeService recipeService) {
         this.mealRecordService = mealRecordService;
         this.recipeService = recipeService;
     }
     
+    /** 注入身体数据服务，用于获取推荐热量 */
     public void setBodyDataService(BodyDataService bodyDataService) {
         this.bodyDataService = bodyDataService;
     }
@@ -66,6 +82,7 @@ public class NutritionAnalysisController {
         loadData();
     }
 
+    /** FXML 初始化：设置日期默认值，加载营养数据 */
     @FXML
     private void initialize() {
         if (datePicker != null) {
@@ -75,6 +92,7 @@ public class NutritionAnalysisController {
         loadData();
     }
 
+    /** 加载营养数据：统计各餐次营养素，更新图表和进度条 */
     private void loadData() {
         if (mealRecordService != null && recipeService != null) {
             LocalDate date = datePicker != null ? (datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now()) : LocalDate.now();
@@ -144,6 +162,7 @@ public class NutritionAnalysisController {
         }
     }
     
+    /** 更新营养进度条：根据推荐热量计算目标值，设置进度和颜色 */
     private void updateProgressBars(double totalProtein, double totalCarb, double totalFat, int totalCalories) {
         BodyData bodyData = bodyDataService != null ? bodyDataService.getLatestBodyData() : null;
         int targetCalories = 2000;
@@ -180,6 +199,7 @@ public class NutritionAnalysisController {
         }
     }
     
+    /** 根据进度值返回颜色样式：<50%黄色，50-100%绿色，>100%红色 */
     private String getProgressColor(double progress) {
         if (progress < 0.5) {
             return "-fx-accent: #E6A23C;";
@@ -190,6 +210,7 @@ public class NutritionAnalysisController {
         }
     }
 
+    /** 手动刷新按钮：重新加载营养数据 */
     @FXML
     private void handleRefresh() {
         loadData();

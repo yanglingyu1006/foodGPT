@@ -17,7 +17,7 @@
             <Separator orientation="VERTICAL" prefHeight="16"/>
             <Label text="经期第3天" styleClass="hint-text"/>
         </HBox>
-        <Button text="+ 新建咨询" styleClass="btn-primary"/>
+        <Button fx:id="newChatBtn" text="+ 新建咨询" styleClass="btn-primary" onAction="#handleNewChat"/>
     </HBox>
 
     <!-- 对话消息列表 -->

@@ -17,8 +17,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 菜谱详情控制器
+ * 
+ * 功能模块：
+ * 1. 菜谱信息展示 - 显示菜谱名称、分类、热量、食材、步骤等详细信息
+ * 2. 菜谱保存到本地 - 将联网搜索的菜谱保存到本地数据库
+ * 3. 窗口关闭 - 关闭详情弹窗并返回上一页
+ * 
+ * @author FoodGPT
+ */
 public class RecipeDetailController {
 
+    // ==================== FXML 组件注入 ====================
+    
     @FXML
     private Label recipeNameLabel;
     @FXML
@@ -44,19 +56,23 @@ public class RecipeDetailController {
     private RecipeService recipeService;
     private boolean saved = false;
 
+    /** 注入菜谱服务 */
     public void setRecipeService(RecipeService recipeService) {
         this.recipeService = recipeService;
     }
 
+    /** 获取菜谱是否已保存的状态 */
     public boolean isSaved() {
         return saved;
     }
 
+    /** 设置要展示的菜谱数据并更新界面 */
     public void setRecipe(Recipe recipe) {
         this.recipe = recipe;
         displayRecipe();
     }
 
+    /** FXML 初始化：绑定按钮事件 */
     @FXML
     private void initialize() {
         if (closeBtn != null) {
@@ -67,6 +83,7 @@ public class RecipeDetailController {
         }
     }
 
+    /** 展示菜谱详细信息到界面 */
     private void displayRecipe() {
         if (recipe == null) return;
 
@@ -141,6 +158,7 @@ public class RecipeDetailController {
         }
     }
 
+    /** 保存菜谱到本地数据库 */
     @FXML
     private void handleSave() {
         if (recipeService == null) {
@@ -170,11 +188,13 @@ public class RecipeDetailController {
         closeWindow();
     }
 
+    /** 关闭详情窗口 */
     @FXML
     private void handleClose() {
         closeWindow();
     }
 
+    /** 关闭当前窗口 */
     private void closeWindow() {
         if (closeBtn != null) {
             Stage stage = (Stage) closeBtn.getScene().getWindow();

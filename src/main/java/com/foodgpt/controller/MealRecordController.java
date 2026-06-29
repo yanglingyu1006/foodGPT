@@ -15,8 +15,22 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 用餐记录控制器
+ * 
+ * 功能模块：
+ * 1. 用餐记录添加 - 选择日期、餐次、菜谱、份量后添加记录
+ * 2. 用餐记录删除 - 删除选中的用餐记录
+ * 3. 记录列表展示 - 按日期和餐次筛选显示用餐记录
+ * 4. 每日营养汇总 - 显示当日总热量、蛋白质、碳水、脂肪
+ * 5. 日期切换 - 切换日期自动刷新记录列表
+ * 
+ * @author FoodGPT
+ */
 public class MealRecordController {
 
+    // ==================== FXML 组件注入 ====================
+    
     @FXML
     private DatePicker datePicker;
     @FXML
@@ -42,11 +56,13 @@ public class MealRecordController {
     private RecipeService recipeService;
     private MainLayoutController mainLayoutController;
 
+    /** 注入用餐记录和菜谱服务 */
     public void setServices(MealRecordService mealRecordService, RecipeService recipeService) {
         this.mealRecordService = mealRecordService;
         this.recipeService = recipeService;
     }
 
+    /** 设置主布局控制器，用于跨页面刷新 */
     public void setMainLayoutController(MainLayoutController mainLayoutController) {
         this.mainLayoutController = mainLayoutController;
     }
@@ -60,6 +76,7 @@ public class MealRecordController {
         updateDailySummary();
     }
 
+    /** FXML 初始化：设置日期默认值、餐次下拉框、份量选择器，加载数据 */
     @FXML
     private void initialize() {
         datePicker.setValue(LocalDate.now());
@@ -79,6 +96,7 @@ public class MealRecordController {
         updateDailySummary();
     }
 
+    /** 加载所有菜谱到下拉框 */
     private void loadRecipes() {
         if (recipeService != null && recipeComboBox != null) {
             List<Recipe> recipes = recipeService.getAllRecipes();
@@ -90,6 +108,7 @@ public class MealRecordController {
         }
     }
 
+    /** 加载当前日期和餐次的用餐记录列表 */
     private void loadRecords() {
         if (mealRecordService != null && recipeService != null && recordListView != null) {
             LocalDate date = datePicker != null ? (datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now()) : LocalDate.now();
@@ -116,6 +135,7 @@ public class MealRecordController {
         }
     }
 
+    /** 更新当日营养汇总显示（总热量、蛋白质、碳水、脂肪） */
     private void updateDailySummary() {
         if (mealRecordService != null && recipeService != null) {
             LocalDate date = datePicker != null ? (datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now()) : LocalDate.now();
@@ -151,6 +171,7 @@ public class MealRecordController {
         }
     }
 
+    /** 添加用餐记录，刷新首页营养进度 */
     @FXML
     private void handleAdd() {
         String recipeName = recipeComboBox.getValue();
@@ -185,6 +206,7 @@ public class MealRecordController {
         showAlert("记录成功");
     }
 
+    /** 删除选中的用餐记录，刷新首页营养进度 */
     @FXML
     private void handleDelete() {
         MealRecord selected = recordListView.getSelectionModel().getSelectedItem();

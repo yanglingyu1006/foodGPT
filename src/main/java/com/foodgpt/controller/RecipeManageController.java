@@ -10,8 +10,22 @@ import javafx.scene.control.*;
 
 import java.util.List;
 
+/**
+ * 菜谱管理控制器
+ * 
+ * 功能模块：
+ * 1. 菜谱列表展示 - 分页显示所有菜谱
+ * 2. 菜谱搜索 - 按关键词和分类筛选菜谱
+ * 3. 菜谱详情 - 查看菜谱详细信息
+ * 4. 菜谱删除 - 删除菜谱并刷新关联页面
+ * 5. 联网搜索入口 - 跳转到菜谱搜索页面
+ * 
+ * @author FoodGPT
+ */
 public class RecipeManageController {
 
+    // ==================== FXML 组件注入 ====================
+    
     @FXML
     private TextField searchField;
     @FXML
@@ -39,6 +53,7 @@ public class RecipeManageController {
         this.recipeService = recipeService;
     }
 
+    /** 设置主布局控制器，用于跨页面刷新 */
     public void setMainLayoutController(MainLayoutController mainLayoutController) {
         this.mainLayoutController = mainLayoutController;
     }
@@ -120,6 +135,7 @@ public class RecipeManageController {
         }
     }
 
+    /** 下一页 */
     @FXML
     private void handleNextPage() {
         int totalPages = Math.max(1, (int) Math.ceil((double) allRecipes.size() / PAGE_SIZE));
@@ -169,6 +185,7 @@ public class RecipeManageController {
         }
     }
 
+    /** 跳转到联网搜索页面 */
     @FXML
     private void handleOnlineSearch() {
         if (mainLayoutController != null) {

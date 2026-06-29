@@ -89,7 +89,6 @@ foodGPT/
 │   │   ├── controller/                    # 控制器层
 │   │   │   ├── MainLayoutController.java  # 主布局（侧边栏+导航）
 │   │   │   ├── DashboardController.java   # 首页仪表盘
-│   │   │   ├── WeightTrackController.java # 体重追踪
 │   │   │   ├── RecipeManageController.java# 菜谱管理
 │   │   │   ├── RecipeSearchController.java# 菜谱搜索
 │   │   │   ├── RecipeDetailController.java # 菜谱详情

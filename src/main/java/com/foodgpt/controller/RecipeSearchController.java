@@ -13,8 +13,23 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 菜谱搜索控制器
+ * 
+ * 功能模块：
+ * 1. 本地搜索 - 在本地数据库中搜索菜谱
+ * 2. 联网搜索 - 调用外部API搜索菜谱
+ * 3. 搜索方式切换 - 本地/联网单选按钮切换
+ * 4. 菜谱详情查看 - 双击列表项查看详细信息
+ * 5. 菜谱保存 - 将联网搜索的菜谱保存到本地
+ * 6. 返回菜谱管理 - 返回上一页
+ * 
+ * @author FoodGPT
+ */
 public class RecipeSearchController {
 
+    // ==================== FXML 组件注入 ====================
+    
     @FXML
     private TextField searchField;
     @FXML
@@ -36,18 +51,22 @@ public class RecipeSearchController {
     private ExternalRecipeService externalRecipeService;
     private MainLayoutController mainLayoutController;
 
+    /** 注入本地菜谱服务 */
     public void setService(RecipeService recipeService) {
         this.recipeService = recipeService;
     }
 
+    /** 注入外部菜谱服务（联网搜索） */
     public void setExternalRecipeService(ExternalRecipeService externalRecipeService) {
         this.externalRecipeService = externalRecipeService;
     }
 
+    /** 设置主布局控制器，用于跨页面刷新 */
     public void setMainLayoutController(MainLayoutController mainLayoutController) {
         this.mainLayoutController = mainLayoutController;
     }
 
+    /** FXML 初始化：设置搜索方式单选按钮，注册双击事件 */
     @FXML
     private void initialize() {
         if (localRadio != null && onlineRadio != null) {
@@ -67,6 +86,7 @@ public class RecipeSearchController {
         }
     }
 
+    /** 执行搜索：根据选择的搜索方式调用本地或联网搜索 */
     @FXML
     private void handleSearch() {
         String keyword = searchField.getText();
@@ -115,6 +135,7 @@ public class RecipeSearchController {
         }
     }
 
+    /** 查看选中菜谱的详情，若详情中保存了菜谱则刷新菜谱管理页 */
     @FXML
     private void handleViewDetail() {
         Recipe selected = resultListView.getSelectionModel().getSelectedItem();
@@ -129,6 +150,7 @@ public class RecipeSearchController {
         }
     }
 
+    /** 保存选中菜谱到本地数据库，刷新菜谱管理页 */
     @FXML
     private void handleSaveRecipe() {
         Recipe selected = resultListView.getSelectionModel().getSelectedItem();
@@ -172,6 +194,7 @@ public class RecipeSearchController {
         }
     }
 
+    /** 返回菜谱管理页面 */
     @FXML
     private void handleBack() {
         if (mainLayoutController != null) {

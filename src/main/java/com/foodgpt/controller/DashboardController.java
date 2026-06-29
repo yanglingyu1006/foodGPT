@@ -20,8 +20,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 首页仪表盘控制器
+ * 
+ * 功能模块：
+ * 1. 身体数据管理 - 身高/体重/年龄/活动量的录入与保存
+ * 2. BMI/BMR 计算 - 自动计算身体质量指数和基础代谢率
+ * 3. 推荐热量 - 根据活动量计算每日推荐热量范围
+ * 4. 体重趋势图 - 30天体重变化折线图
+ * 5. 今日营养进度 - 蛋白质/碳水/脂肪进度条
+ * 6. 均衡度评分 - 三大营养素比例评分
+ * 
+ * @author FoodGPT
+ */
 public class DashboardController {
 
+    // ==================== FXML 组件注入 ====================
+    
     @FXML
     private Spinner<Double> heightSpinner;
     @FXML
@@ -69,6 +84,7 @@ public class DashboardController {
     private MainLayoutController mainLayoutController;
     private BodyData currentBodyData;
 
+    /** 注入身体数据、营养、体重追踪三个 Service */
     public void setServices(BodyDataService bodyDataService, NutritionService nutritionService,
                             WeightTrackService weightTrackService) {
         this.bodyDataService = bodyDataService;
@@ -76,6 +92,7 @@ public class DashboardController {
         this.weightTrackService = weightTrackService;
     }
 
+    /** 设置主布局控制器，用于跨页面刷新和状态栏更新 */
     public void setMainLayoutController(MainLayoutController mainLayoutController) {
         this.mainLayoutController = mainLayoutController;
     }
@@ -88,6 +105,7 @@ public class DashboardController {
         loadData();
     }
 
+    /** FXML 初始化：设置 Spinner/ComboBox 默认值，加载数据库数据 */
     @FXML
     private void initialize() {
         if (heightSpinner != null) {
@@ -106,6 +124,7 @@ public class DashboardController {
         loadData();
     }
 
+    /** 加载身体数据、体重趋势图、营养进度 */
     private void loadData() {
         System.out.println("[Dashboard] loadData() 开始，从数据库重新加载...");
         // 加载身体数据
@@ -133,6 +152,7 @@ public class DashboardController {
 
     // ==================== 体重趋势图 ====================
 
+    /** 加载30天体重趋势折线图 */
     private void loadWeightChart() {
         if (weightTrackService == null || weightChart == null) {
             return;
@@ -202,6 +222,7 @@ public class DashboardController {
 
     // ==================== 营养进度条 ====================
 
+    /** 加载今日营养摄入进度条和均衡度评分 */
     private void loadNutritionProgress() {
         if (nutritionService == null) {
             return;
@@ -285,6 +306,7 @@ public class DashboardController {
 
     // ==================== 身体数据 ====================
 
+    /** 显示空数据状态（BMI/BMR/推荐热量） */
     private void showEmptyState() {
         if (bmiLabel != null) {
             bmiLabel.setText("BMI: 未设置");
@@ -297,6 +319,7 @@ public class DashboardController {
         }
     }
 
+    /** 保存身体数据并同步体重记录到体重追踪表 */
     @FXML
     private void handleSave() {
         if (heightSpinner == null || weightSpinner == null || ageSpinner == null || activityComboBox == null) {
@@ -347,6 +370,7 @@ public class DashboardController {
         showAlert("保存成功");
     }
 
+    /** 根据当前输入计算并更新BMI/BMR/推荐热量显示 */
     private void updateCalculations() {
         if (heightSpinner == null || weightSpinner == null || ageSpinner == null || activityComboBox == null) {
             return;
@@ -382,6 +406,7 @@ public class DashboardController {
         }
     }
 
+    /** 计算并设置BodyData对象的BMI/BMR/推荐热量 */
     private void updateCalculations(BodyData bodyData) {
         ActivityLevel level = ActivityLevel.fromLabel(activityComboBox.getValue());
         double bmi = BmiBmrCalculator.calculateBmi(bodyData.getHeight(), bodyData.getWeight());
@@ -395,6 +420,7 @@ public class DashboardController {
 
     // ==================== 导航 ====================
 
+    /** 跳转到营养分析页面 */
     @FXML
     private void handleViewAnalysis() {
         if (mainLayoutController != null) {

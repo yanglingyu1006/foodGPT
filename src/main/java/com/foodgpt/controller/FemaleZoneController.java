@@ -15,8 +15,23 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 女性专区控制器
+ * 
+ * 功能模块：
+ * 1. 健康目标设定 - 减脂/增肌/维持三选一，保存到数据库
+ * 2. 生理周期管理 - 记录经期开始日期和周期长度，计算当前阶段
+ * 3. 周期阶段显示 - 经期/卵泡期/排卵期/黄体期，动态更新指示器
+ * 4. 专属食谱 - 根据周期阶段推荐适合的菜谱
+ * 5. 专属匹配 - 根据偏好食材和营养缺口匹配菜谱
+ * 6. 营养缺口分析 - 对比实际摄入与目标，生成补充建议
+ * 
+ * @author FoodGPT
+ */
 public class FemaleZoneController {
 
+    // ==================== FXML 组件注入 ====================
+    
     @FXML
     private Label cyclePhaseLabel;
     @FXML
@@ -56,10 +71,12 @@ public class FemaleZoneController {
     private MainLayoutController mainLayoutController;
     private HealthGoal currentGoal;
 
+    /** 注入周期服务 */
     public void setService(CycleService cycleService) {
         this.cycleService = cycleService;
     }
 
+    /** 注入身体数据、菜谱、用餐记录、营养服务 */
     public void setServices(BodyDataService bodyDataService, RecipeService recipeService,
                             MealRecordService mealRecordService, NutritionService nutritionService) {
         this.bodyDataService = bodyDataService;
@@ -68,14 +85,17 @@ public class FemaleZoneController {
         this.nutritionService = nutritionService;
     }
 
+    /** 注入健康目标服务 */
     public void setHealthGoalService(HealthGoalService healthGoalService) {
         this.healthGoalService = healthGoalService;
     }
 
+    /** 注入用户偏好服务 */
     public void setUserPreferenceService(UserPreferenceService userPreferenceService) {
         this.userPreferenceService = userPreferenceService;
     }
 
+    /** 设置主布局控制器，用于跨页面刷新 */
     public void setMainLayoutController(MainLayoutController mainLayoutController) {
         this.mainLayoutController = mainLayoutController;
     }
@@ -87,6 +107,7 @@ public class FemaleZoneController {
         loadData();
     }
 
+    /** FXML 初始化：设置周期长度Spinner默认值，加载数据 */
     @FXML
     private void initialize() {
         if (cycleLengthSpinner != null) {
@@ -108,6 +129,7 @@ public class FemaleZoneController {
         loadData();
     }
 
+    /** 加载数据：周期阶段、周期记录、健康目标 */
     private void loadData() {
         System.out.println("[FemaleZone] loadData() 开始...");
         if (cycleService != null) {
@@ -140,6 +162,7 @@ public class FemaleZoneController {
         loadCurrentGoal();
     }
 
+    /** 更新周期阶段指示器：当前阶段高亮，其余置灰 */
     private void updatePhaseIndicators(CyclePhase phase) {
         if (menstruationIndicator == null || follicularIndicator == null
                 || ovulationIndicator == null || lutealIndicator == null) {
@@ -168,6 +191,7 @@ public class FemaleZoneController {
         System.out.println("[FemaleZone] 阶段指示器已更新为: " + phase.getLabel());
     }
 
+    /** 加载当前健康目标，更新标签和单选按钮状态 */
     private void loadCurrentGoal() {
         System.out.println("[FemaleZone] loadCurrentGoal() 开始...");
         if (healthGoalService != null) {
@@ -192,6 +216,7 @@ public class FemaleZoneController {
         updateGoalRadioButtons();
     }
 
+    /** 更新健康目标单选按钮选中状态 */
     private void updateGoalRadioButtons() {
         if (currentGoal == null || weightLossRadio == null || muscleGainRadio == null || maintainRadio == null) {
             return;
@@ -215,6 +240,7 @@ public class FemaleZoneController {
         }
     }
 
+    /** 保存周期记录：更新已有记录或新增记录 */
     @FXML
     private void handleSaveCycle() {
         System.out.println("[FemaleZone] handleSaveCycle() 被调用");
@@ -248,6 +274,7 @@ public class FemaleZoneController {
         showAlert("保存成功");
     }
 
+    /** 保存健康目标：减脂/增肌/维持 */
     @FXML
     private void handleSaveGoal() {
         System.out.println("[FemaleZone] handleSaveGoal() 被调用");
@@ -294,6 +321,7 @@ public class FemaleZoneController {
 
     // ==================== 一、专属食谱 ====================
 
+    /** 查看专属食谱：根据周期阶段推荐菜谱 */
     @FXML
     private void handleViewRecipes() {
         System.out.println("[FemaleZone] handleViewRecipes() 被调用");
@@ -413,6 +441,7 @@ public class FemaleZoneController {
 
     // ==================== 二、专属匹配 ====================
 
+    /** 查看专属匹配：根据偏好食材和营养缺口匹配菜谱 */
     @FXML
     private void handleViewMatching() {
         System.out.println("[FemaleZone] handleViewMatching() 被调用");
